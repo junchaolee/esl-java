@@ -60,6 +60,7 @@ hs_err_pid*
 .classpath 
 .project 
 .settings
+.mvn
 target
 bin
 log
