@@ -17,7 +17,7 @@ import com.xbstar.esl.service.impl.SipAccountServiceImpl;
 @RequestMapping("/api")
 public class API {
 	@Value("${SIP_DOMAIN}")
-	private String domain;
+	private String sip_domain;
 
 	@Autowired
 	SipAccountServiceImpl sipAccountService;
@@ -52,19 +52,26 @@ public class API {
 		switch (section) {
 		case "directory":
 			String user = req.getParameter("user");
+			//排除系统默认的用户，1***
+			if(user.length()<=4) {
+				return "not foud";
+			}
+			
 			SipAccount sipAccountEntity = sipAccountService.findByUserId(user);
 			if (sipAccountEntity == null) {
 				return "not found";
 			}
+			
 
-			String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+			// 1、配置用户默认的user_context=defualt
+			String xml_reg = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
 					+ "<document type=\"freeswitch/xml\">\n" + "  <section name=\"directory\">\n"
-					+ "    <domain name=\"" + domain + "\">\n" + "      <user id=\"" + sipAccountEntity.getUserId()
+					+ "    <domain name=\"" + sip_domain + "\">\n" + "      <user id=\"" + sipAccountEntity.getUserId()
 					+ "\">\n" + "        <params>\n" + "          <param name=\"password\" value=\""
 					+ sipAccountEntity.getPassword() + "\"/>\n"
 					+ "          <param name=\"dial-string\" value=\"{sip_invite_domain=${dialed_domain},presence_id=${dialed_user}@${dialed_domain}}${sofia_contact(${dialed_user}@${dialed_domain})}\"/>\n"
 					+ "        </params>\n" + "        <variables>\n"
-					+ "          <variable name=\"user_context\" value=\"" + "default" + "\"/>\n"
+					+ "          <variable name=\"user_context\" value=\"" +"default"+ "\"/>\n"
 					+ "          <variable name=\"toll_allow\" value=\"domestic,international,local\"/>\n"
 					+ "          <variable name=\"accountcode\" value=\"" + sipAccountEntity.getUserId() + "\"/>\n"
 					+ "          <variable name=\"effective_caller_id_name\" value=\"Extension  "
@@ -73,13 +80,32 @@ public class API {
 					+ "\"/>\n" + "          <variable name=\"callgroup\" value=\"techsupport\"/>\n"
 					+ "        </variables>\n" + "      </user>\n" + "    </domain>\n" + "  </section>\n"
 					+ "</document>";
-			return xml;
+			System.out.println("【注册用户信息】-"+"sip_profile:"+req.getParameter("sip_profile")+" | action:"+req.getParameter("action"));
+			return xml_reg;
 			
 		case "dialplan":
-			return "ok";
+			// 1、配置context 为：default
+			String called = req.getParameter("Caller-Destination-Number");
+			String domain_name = req.getParameter("variable_domain_name");
+			String cxt = req.getParameter("Caller-Context");
+			String xml_dia = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+					+"<document type=\"freeswitch/xml\">\n"
+					+"  <section name=\"dialplan\" description=\"RE Dial Plan For FreeSwitch\">\n"
+					+"    <context name=\"default\">\n"
+					+"      <extension name=\"test9\">\n"
+					+"        <condition field=\"destination_number\" expression=\"^([0-9]{5,6})$\">\n"
+					+"          <action application=\"export\" data=\"dialed_extension=$1\"/>\n"
+					+"          <action application=\"bridge\""+" data=\"user/"+called+"@"+sip_domain+"\"/>\n"
+					+"        </condition>\n"
+					+"      </extension>\n"
+					+"    </context>\n"
+					+"  </section>\n"
+					+"</document>";
+			System.out.println("【路由信息】-被叫:"+called+" |"+"主叫context: "+cxt);
+			return xml_dia;
 
 		default:
-			return "not found";
+			return "not found"; 
 
 		}
 

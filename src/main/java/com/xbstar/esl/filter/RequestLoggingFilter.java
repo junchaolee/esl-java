@@ -16,13 +16,13 @@ public class RequestLoggingFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
  
         // 打印请求URL和HTTP方法
-        System.out.println(request.getMethod() + " " + request.getRequestURL());
+        //System.out.println(request.getMethod() + " " + request.getRequestURL());
               
         
         ObjectMapper objectMapper = new ObjectMapper();
         
         String writeValueAsString = objectMapper.writeValueAsString(request.getParameterMap());
-        System.out.println("请求参数:"+writeValueAsString);
+        System.out.println("【url请求参数】:"+writeValueAsString);
  
         
 		/*

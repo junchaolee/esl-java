@@ -11,7 +11,7 @@
         </commentGenerator>
         <!--数据库链接地址账号密码-->
         <!--  <jdbcConnection driverClass="com.mysql.jdbc.Driver" connectionURL="jdbc:mysql://127.0.0.1:3306/freeswitch" userId="root" password="88888888">  -->
-        <jdbcConnection driverClass="com.mysql.jdbc.Driver" connectionURL="jdbc:mysql://192.168.0.130:3306/fs1" userId="root" password="888888">
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver" connectionURL="jdbc:mysql://192.168.31.155:3306/fs1" userId="root" password="888888">
         
         </jdbcConnection>
         <javaTypeResolver>

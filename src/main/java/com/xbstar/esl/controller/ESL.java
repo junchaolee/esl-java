@@ -99,7 +99,7 @@ public class ESL {
 					record.setStartStamp(startTime);
 					record.setAnswerStamp(answerTime);
 					callRecordService.insert(record);
-					System.out.println("事件：CHANNEL_BRIDGE");
+					System.out.println("【事件】：CHANNEL_BRIDGE");
 
 					break;
 //                    case EventConstant.CHANNEL_DESTROY:
@@ -118,7 +118,7 @@ public class ESL {
 					callRecord.setBillsec(billsec);
 					callRecord.setHangupCause(hangupCause);
 					callRecordService.update(callRecord);
-					System.out.println("事件：CHANNEL_HANGUP_COMPLETE");
+					System.out.println("【事件】：CHANNEL_HANGUP_COMPLETE");
 					break;
 
 				//case EventConstant.HEARTBEAT:
