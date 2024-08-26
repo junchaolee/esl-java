@@ -52,11 +52,6 @@ public class API {
 		switch (section) {
 		case "directory":
 			String user = req.getParameter("user");
-			//排除系统默认的用户，1***
-			if(user.length()<=4) {
-				return "not foud";
-			}
-			
 			SipAccount sipAccountEntity = sipAccountService.findByUserId(user);
 			if (sipAccountEntity == null) {
 				return "not found";
@@ -74,8 +69,8 @@ public class API {
 					+ "          <variable name=\"user_context\" value=\"" +"default"+ "\"/>\n"
 					+ "          <variable name=\"toll_allow\" value=\"domestic,international,local\"/>\n"
 					+ "          <variable name=\"accountcode\" value=\"" + sipAccountEntity.getUserId() + "\"/>\n"
-					+ "          <variable name=\"effective_caller_id_name\" value=\"Extension  "
-					+ sipAccountEntity.getUserId() + " \"/>\n"
+					+ "          <variable name=\"effective_caller_id_name\" value=\""
+					+ sipAccountEntity.getUserId() + "\"/>\n"
 					+ "          <variable name=\"effective_caller_id_number\" value=\"" + sipAccountEntity.getUserId()
 					+ "\"/>\n" + "          <variable name=\"callgroup\" value=\"techsupport\"/>\n"
 					+ "        </variables>\n" + "      </user>\n" + "    </domain>\n" + "  </section>\n"
@@ -84,7 +79,7 @@ public class API {
 			return xml_reg;
 			
 		case "dialplan":
-			// 1、配置context 为：default
+			// 1、配置context 为：default|public
 			String called = req.getParameter("Caller-Destination-Number");
 			String domain_name = req.getParameter("variable_domain_name");
 			String cxt = req.getParameter("Caller-Context");
@@ -101,7 +96,7 @@ public class API {
 					+"    </context>\n"
 					+"  </section>\n"
 					+"</document>";
-			System.out.println("【路由信息】-被叫:"+called+" |"+"主叫context: "+cxt);
+			System.out.println("【路由信息】-被叫:"+called+" | "+"主叫context: "+cxt+" | "+"domian:"+sip_domain);
 			return xml_dia;
 
 		default:
