@@ -64,3 +64,4 @@ hs_err_pid*
 target
 bin
 log
+mybatis-generator.xml
