@@ -85,14 +85,16 @@ public class ESL {
 					callSoundService.insert(callSound);
 					break;
 				case EventConstant.CHANNEL_CREATE:
-					System.out.println("【事件】：CHANNEL_CREATE");
-					System.out.println(json);
+					System.out.println("【事件】：CHANNEL_CREATE"+" | "+"通道ID："+channelID);
+//					System.out.println(json);
 					//没有给180响应，直接给了200 OK
+					//uuid的说明：https://www.freeswitch.org.cn/books/references/2.48-uuid_answer.html
 					client.sendSyncApiCommand("uuid_answer",channelID);
 					break;
 				case EventConstant.CHANNEL_ANSWER:
-					System.out.println("【事件】：CHANNEL_ANSWER");
-					client.canSend();
+					System.out.println("【事件】：CHANNEL_ANSWER"+" | "+"通道ID："+channelID);
+					//收到应答ack，开始查找路由桥接被叫
+					client.sendSyncApiCommand("bridge", "user/100100@192.168.31.155");
 					break;
 
 					

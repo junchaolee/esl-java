@@ -84,13 +84,14 @@ public class API {
 			String called = req.getParameter("Caller-Destination-Number");
 			String domain_name = req.getParameter("variable_domain_name");
 			String cxt = req.getParameter("Caller-Context");
-			String xml_defautl = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+			String xml_default= "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
 					+"<document type=\"freeswitch/xml\">\n"
 					+"  <section name=\"dialplan\" description=\"RE Dial Plan For FreeSwitch\">\n"
 					+"    <context name=\"default\">\n"
 					+"      <extension name=\"test1\">\n"
 					+"        <condition field=\"destination_number\" expression=\"^([0-9]{5,6})$\">\n"
 					+"          <action application=\"export\" data=\"dialed_extension=$1\"/>\n"
+					+"          <action application=\"sleep\"  data=\"5000\" />\n"	
 					+"          <action application=\"bridge\""+" data=\"{absolute_codec_string=PCMA\\,PCMU}user/"+called+"@"+sip_domain+"\"/>\n"
 					+"        </condition>\n"
 					+"      </extension>\n"
@@ -99,6 +100,7 @@ public class API {
 					+"</document>";
 			
 			// 方法2、对所有呼入做park处理，交由esl处理
+			// park 之前加上180振铃 <action application="ring_ready"/>
 			String xml_park = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
 					+"<document type=\"freeswitch/xml\">\n"
 					+"  <section name=\"dialplan\" description=\"RE Dial Plan For FreeSwitch\">\n"
@@ -106,6 +108,7 @@ public class API {
 					+"      <extension name=\"test2\">\n"
 					+"        <condition field=\"destination_number\" expression=\"^(.+)$\">\n"
 					+"          <action application=\"export\" data=\"dialed_extension=$1\"/>\n"
+					+"          <action application=\"ring_ready\"/>\n"
 					+"          <action application=\"park\"/>\n"
 					+"        </condition>\n"
 					+"      </extension>\n"
