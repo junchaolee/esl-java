@@ -57,6 +57,7 @@ public class API {
 				return "not found";
 			}
 			
+			
 
 			// 1、配置用户默认的user_context=defualt
 			String xml_reg = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
@@ -79,25 +80,40 @@ public class API {
 			return xml_reg;
 			
 		case "dialplan":
-			// 1、配置context 为：default|public
+			// 方法1、配置context 为：default|public
 			String called = req.getParameter("Caller-Destination-Number");
 			String domain_name = req.getParameter("variable_domain_name");
 			String cxt = req.getParameter("Caller-Context");
-			String xml_dia = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+			String xml_defautl = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
 					+"<document type=\"freeswitch/xml\">\n"
 					+"  <section name=\"dialplan\" description=\"RE Dial Plan For FreeSwitch\">\n"
 					+"    <context name=\"default\">\n"
-					+"      <extension name=\"test9\">\n"
+					+"      <extension name=\"test1\">\n"
 					+"        <condition field=\"destination_number\" expression=\"^([0-9]{5,6})$\">\n"
 					+"          <action application=\"export\" data=\"dialed_extension=$1\"/>\n"
-					+"          <action application=\"bridge\""+" data=\"user/"+called+"@"+sip_domain+"\"/>\n"
+					+"          <action application=\"bridge\""+" data=\"{absolute_codec_string=PCMA\\,PCMU}user/"+called+"@"+sip_domain+"\"/>\n"
+					+"        </condition>\n"
+					+"      </extension>\n"
+					+"    </context>\n"
+					+"  </section>\n"
+					+"</document>";
+			
+			// 方法2、对所有呼入做park处理，交由esl处理
+			String xml_park = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+					+"<document type=\"freeswitch/xml\">\n"
+					+"  <section name=\"dialplan\" description=\"RE Dial Plan For FreeSwitch\">\n"
+					+"    <context name=\"default\">\n"
+					+"      <extension name=\"test2\">\n"
+					+"        <condition field=\"destination_number\" expression=\"^(.+)$\">\n"
+					+"          <action application=\"export\" data=\"dialed_extension=$1\"/>\n"
+					+"          <action application=\"park\"/>\n"
 					+"        </condition>\n"
 					+"      </extension>\n"
 					+"    </context>\n"
 					+"  </section>\n"
 					+"</document>";
 			System.out.println("【路由信息】-被叫:"+called+" | "+"主叫context: "+cxt+" | "+"domian:"+sip_domain);
-			return xml_dia;
+			return xml_park;
 
 		default:
 			return "not found"; 

@@ -4,6 +4,13 @@ public class SipAccount {
 	
 	private String userId;
 	private String password;
+	private String codec;
+	public String getCodec() {
+		return codec;
+	}
+	public void setCodec(String codec) {
+		this.codec = codec;
+	}
 	public String getUserId() {
 		return userId;
 	}
@@ -17,4 +24,5 @@ public class SipAccount {
 		this.password = password;
 	}
 
+	
 }

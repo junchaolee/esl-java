@@ -12,4 +12,6 @@ public class EventConstant {
 	public static final String CHANNEL_DESTROY = "CHANNEL_DESTROY";
 	public static final String CHANNEL_HANGUP_COMPLETE = "CHANNEL_HANGUP_COMPLETE";
 	public static final String HEARTBEAT = "HEARTBEAT";
+	public static final String CHANNEL_CREATE = "CHANNEL_CREATE";
+
 }

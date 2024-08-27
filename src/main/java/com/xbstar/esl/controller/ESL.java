@@ -62,6 +62,7 @@ public class ESL {
 			log.error("Connect failed", e);
 			return null;
 		}
+		
 
 		// 注册事件处理程序
 		client.addEventListener(new IEslEventListener() {
@@ -72,6 +73,7 @@ public class ESL {
 				String caller_id_name = map.get("Caller-Caller-ID-Number");
 				String caller_id_number = map.get("Caller-Caller-ID-Name");
 				String destination_number = map.get("Caller-Destination-Number");
+				String channelID = map.get("Unique-ID");
 
 				JSONObject json = JSONObject.parseObject(JSON.toJSONString(map));
 				switch (type) {
@@ -82,6 +84,18 @@ public class ESL {
 					callSound.setFilePath(filepath);
 					callSoundService.insert(callSound);
 					break;
+				case EventConstant.CHANNEL_CREATE:
+					System.out.println("【事件】：CHANNEL_CREATE");
+					System.out.println(json);
+					//没有给180响应，直接给了200 OK
+					client.sendSyncApiCommand("uuid_answer",channelID);
+					break;
+				case EventConstant.CHANNEL_ANSWER:
+					System.out.println("【事件】：CHANNEL_ANSWER");
+					client.canSend();
+					break;
+
+					
 				case EventConstant.RECORD_STOP:
 					break;
 //                    case EventConstant.CHANNEL_ANSWER:
@@ -130,12 +144,19 @@ public class ESL {
 				}
 			}
 
+
+
+				
+
+
 			public void backgroundJobResultReceived(EslEvent event) {
 				// String uuid = event.getEventHeaders().get("Job-UUID");
 //				log.info("Background job result received+:" + event.getEventName() + "/" + event.getEventHeaders());// +"/"+JoinString(event.getEventHeaders())+"/"+JoinString(event.getEventBodyLines()));
 			}
 
 		});
+		
+		
 		
 		
 		client.setEventSubscriptions("plain", "all");
