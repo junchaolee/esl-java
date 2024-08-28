@@ -30,7 +30,7 @@ public class RequestLoggingFilter implements Filter {
             //System.out.println("【DIRECTORY请求参数】:"+writeValueAsString);
 
         }else if("configuration".equals(sec)) {
-        	System.out.println("【CONFIGURATION请求参数】:"+"writeValueAsString");
+        	System.out.println("【CONFIGURATION请求参数】:"+writeValueAsString);
         }
   
  
