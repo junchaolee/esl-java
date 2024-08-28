@@ -76,7 +76,7 @@ public class API {
 					+ "\"/>\n" + "          <variable name=\"callgroup\" value=\"techsupport\"/>\n"
 					+ "        </variables>\n" + "      </user>\n" + "    </domain>\n" + "  </section>\n"
 					+ "</document>";
-			System.out.println("【注册用户信息】-"+"sip_profile:"+req.getParameter("sip_profile")+" | action:"+req.getParameter("action"));
+			//System.out.println("【注册用户信息】-"+"sip_profile:"+req.getParameter("sip_profile")+" | 【action】:"+req.getParameter("action"));
 			return xml_reg;
 			
 		case "dialplan":
@@ -88,6 +88,16 @@ public class API {
 					+"<document type=\"freeswitch/xml\">\n"
 					+"  <section name=\"dialplan\" description=\"RE Dial Plan For FreeSwitch\">\n"
 					+"    <context name=\"default\">\n"
+					+"      <extension name=\"public_called_check_1\">\n"
+					+"        <condition field=\"destination_number\" expression=\"^(110.*)$\">\n"
+					+"            <action application=\"hangup\" data=\"NORMAL\" />\n"
+					+"        </condition>\n"
+					+"      </extension>\n"
+					+"      <extension name=\"public_called_check_1\">\n"
+					+"        <condition field=\"destination_number\" expression=\"^(120.*)$\">\n"
+					+"            <action application=\"hangup\" data=\"NORMAL\" />\n"
+					+"        </condition>\n"
+					+"      </extension>\n"
 					+"      <extension name=\"test1\">\n"
 					+"        <condition field=\"destination_number\" expression=\"^([0-9]{5,6})$\">\n"
 					+"          <action application=\"export\" data=\"dialed_extension=$1\"/>\n"

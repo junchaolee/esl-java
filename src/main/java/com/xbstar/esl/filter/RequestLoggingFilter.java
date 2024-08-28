@@ -22,7 +22,17 @@ public class RequestLoggingFilter implements Filter {
         ObjectMapper objectMapper = new ObjectMapper();
         
         String writeValueAsString = objectMapper.writeValueAsString(request.getParameterMap());
-        System.out.println("【url请求参数】:"+writeValueAsString);
+        String sec = request.getParameter("section");
+        if("dialplan".equals(sec)) {
+            System.out.println("【DIALPLAN请求参数】:"+writeValueAsString);
+
+        }else if("directory".equals(sec)) {
+            //System.out.println("【DIRECTORY请求参数】:"+writeValueAsString);
+
+        }else if("configuration".equals(sec)) {
+        	System.out.println("【CONFIGURATION请求参数】:"+"writeValueAsString");
+        }
+  
  
         
 		/*
