@@ -5,7 +5,7 @@
 		type="com.xbstar.esl.domain.SipGateway">
 		<result column="gw_name" jdbcType="VARCHAR"
 			property="gwName" />
-		<result column="gw_ip" jdbcType="VARCHAR"
+		<result column="gw_i_p" jdbcType="VARCHAR"
 			property="gwIp" />
 		<result column="gw_type" jdbcType="VARCHAR"
 			property="gwType" />	
@@ -13,13 +13,13 @@
 
 	</resultMap>
 	<sql id="Base_Column_List">
-			gw_name,gw_ip,gw_type
+			gw_name,gw_i_p,gw_type
 	</sql>
 	<select id="findByType" parameterType="String"
 		resultMap="BaseResultMap">
 		select
 		<include refid="Base_Column_List" />
-		from gateway
+		from sip_gateway
 		where gw_type = #{gwType,jdbcType=VARCHAR}
 	</select>
 </mapper>

@@ -121,45 +121,46 @@ public class API {
 			return xml_default;
 			
 		case "configuration":
-			List<SipGateway> gwList = sipGatewayService.findAll();
-			String gw="";
-			for(SipGateway sg:gwList) {
-				String gwname = sg.getGwName();
-				String gwip = sg.getGwIP();
-				gw+="<gateway name=\"gwfxo8\">\n"
-			            +"     				<param name=\"proxy\" value=\""+gwname+"\" />\n"
-			            +"     				<param name=\"realm\" value=\""+gwip+"\" />\n"
-			            +"    				<param name=\"register\" value=\"false\" />\n"
-			            +"     				<param name=\"rtp-autofix-timing\" value=\"false\" />\n"
-			            +"     				<param name=\"caller-id-in-from\" value=\"true\" />\n"
-			            +"     				<param name=\"register-transport\" value=\"udp\" />\n"
-			            +"  			</gateway>\n";
-			}
-			System.out.println("网关信息:"+gw);
 			
-			String xml_gw= "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
-		            +"<document type=\"freeswitch/xml\">\n"
-		            +"  <section name=\"configuration\" description=\"Various Configuration\">\n" 
-		            +"    <configuration name=\"sofia.conf\" description=\"sofia Endpoint\">\n"
-		            +"      <profiles>\n"
-		            +"         <profile name=\"external\">\n"
-		            +"            <gateways>\n" 
-		            +"  		    <gateway name=\"gwfxo8\">\n"
-		            +"     				<param name=\"proxy\" value=\"192.168.0.240:5077\" />\n"
-		            +"     				<param name=\"realm\" value=\"192.168.0.240:5077\" />\n"
-		            +"    				<param name=\"register\" value=\"false\" />\n"
-		            +"     				<param name=\"rtp-autofix-timing\" value=\"false\" />\n"
-		            +"     				<param name=\"caller-id-in-from\" value=\"true\" />\n"
-		            +"     				<param name=\"register-transport\" value=\"udp\" />\n"
-		            +"  			</gateway>\n"
-		            +"           </gateways>\n" 
-		            +"         </profile>\n" 
-		            +"\n" 
-		            +"     </profiles>\n" 
-		            +"   </configuration>\n" 
-		            +"  </section>\n" 
-		            +"</document>\n";
-		        return xml_gw;
+			if("sofia.conf".equals(req.getParameter("key_value"))&&"external".equals(req.getParameter("profile"))) {
+				String gws="";
+				List<SipGateway> gwList = sipGatewayService.findAll();
+				for(SipGateway sg:gwList) {
+					String gwname = sg.getGwName();
+					String gwip = sg.getGwIP();
+					gws+="<gateway name=\""+gwname+"\">\n"
+					       +"   <param name=\"proxy\" value=\""+gwip+"\" />\n"
+					       +" 	<param name=\"realm\" value=\""+gwip+"\" />\n"
+					       +" 	<param name=\"register\" value=\"false\" />\n"
+					       +" 	<param name=\"rtp-autofix-timing\" value=\"false\" />\n"
+					       +" 	<param name=\"caller-id-in-from\" value=\"true\" />\n"
+					       +" 	<param name=\"register-transport\" value=\"udp\" />\n"
+					       +"</gateway>\n";
+				}
+				//System.out.println("网关信息:"+gw);
+				String xml_gw= "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+			            +"<document type=\"freeswitch/xml\">\n"
+			            +"  <section name=\"configuration\" description=\"Various Configuration\">\n" 
+			            +"    <configuration name=\"sofia.conf\" description=\"sofia Endpoint\">\n"
+			            +"      <profiles>\n"
+			            +"         <profile name=\"external\">\n"
+			            +"            <gateways>\n" 
+			            +               gws
+			            +"           </gateways>\n" 
+			            +"         </profile>\n" 
+			            +"     </profiles>\n" 
+			            +"   </configuration>\n" 
+			            +"  </section>\n" 
+			            +"</document>\n";
+				System.out.println(xml_gw);
+			    return xml_gw;
+				
+			}else {
+				return "nothing";
+			}
+			
+			
+			
 		
 		default:
 			return "not found"; 
