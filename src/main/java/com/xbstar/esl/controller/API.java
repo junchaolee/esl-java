@@ -1,17 +1,17 @@
 package com.xbstar.esl.controller;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
-import org.apache.tomcat.util.buf.StringUtils;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.xbstar.esl.domain.SipAccount;
+import com.xbstar.esl.domain.SipGateway;
 import com.xbstar.esl.service.impl.SipAccountServiceImpl;
+import com.xbstar.esl.service.impl.SipGatewayServiceImpl;
+
 
 @RestController
 @RequestMapping("/api")
@@ -21,27 +21,10 @@ public class API {
 
 	@Autowired
 	SipAccountServiceImpl sipAccountService;
+	
+	@Autowired
+	SipGatewayServiceImpl sipGatewayService;
 
-	/*
-	 * @GetMapping("/api/sipAccount/login") public String SipAccount() {
-	 * if("id".equals(req.getParameter("key")) &&
-	 * StringUtils.isNotEmpty(req.getParameter("user")) &&
-	 * StringUtils.isNotEmpty(req.getParameter("FreeSWITCH-IPv4")) ){ String code =
-	 * req.getParameter("code");
-	 * if(org.apache.commons.lang.StringUtils.isEmpty(code)){ return "code必传"; }
-	 * return feignClientCallCenter.sipAccountLogin(req.getParameter("user"),req.
-	 * getParameter("code"),req.getParameter("FreeSWITCH-IPv4"));
-	 * 
-	 * } }
-	 */
-	@RequestMapping("/simpleParam")
-	public String simpleParam(HttpServletRequest req) {
-		String name = req.getParameter("name");
-		String ageStr = req.getParameter("age");
-		int age = Integer.parseInt(ageStr); // 注意：这里应该处理NumberFormatException
-		System.out.println(name + ":" + age);
-		return "OK";
-	}
 
 	@RequestMapping("/sipAccount/login")
 	public String login(HttpServletRequest req) {
@@ -80,10 +63,13 @@ public class API {
 			return xml_reg;
 			
 		case "dialplan":
-			// 方法1、配置context 为：default|public
+			
 			String called = req.getParameter("Caller-Destination-Number");
-			String domain_name = req.getParameter("variable_domain_name");
+			//String domain_name = req.getParameter("variable_domain_name");
 			String cxt = req.getParameter("Caller-Context");
+			
+			// 方法1、配置context 为：default|public
+			// 桥接等待5秒 +"          <action application=\"sleep\"  data=\"5000\" />\n"
 			String xml_default= "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
 					+"<document type=\"freeswitch/xml\">\n"
 					+"  <section name=\"dialplan\" description=\"RE Dial Plan For FreeSwitch\">\n"
@@ -98,11 +84,16 @@ public class API {
 					+"            <action application=\"hangup\" data=\"NORMAL\" />\n"
 					+"        </condition>\n"
 					+"      </extension>\n"
-					+"      <extension name=\"test1\">\n"
+					+"      <extension name=\"Local_Dial\">\n"
 					+"        <condition field=\"destination_number\" expression=\"^([0-9]{5,6})$\">\n"
 					+"          <action application=\"export\" data=\"dialed_extension=$1\"/>\n"
-					+"          <action application=\"sleep\"  data=\"5000\" />\n"	
 					+"          <action application=\"bridge\""+" data=\"{absolute_codec_string=PCMA\\,PCMU}user/"+called+"@"+sip_domain+"\"/>\n"
+					+"        </condition>\n"
+					+"      </extension>\n"
+					+"      <extension name=\"2FXO\">\n"
+					+"        <condition field=\"destination_number\" expression=\"^([0-9]{11,12})$\">\n"
+					+"          <action application=\"export\" data=\"dialed_extension=$1\"/>\n"
+					+"          <action application=\"bridge\""+" data=\"sofia/gateway/gwfxo8/$1\"/>\n"
 					+"        </condition>\n"
 					+"      </extension>\n"
 					+"    </context>\n"
@@ -125,22 +116,56 @@ public class API {
 					+"    </context>\n"
 					+"  </section>\n"
 					+"</document>";
+			
 			System.out.println("【路由信息】-被叫:"+called+" | "+"主叫context: "+cxt+" | "+"domian:"+sip_domain);
-			return xml_park;
-
+			return xml_default;
+			
+		case "configuration":
+			List<SipGateway> gwList = sipGatewayService.findAll();
+			String gw="";
+			for(SipGateway sg:gwList) {
+				String gwname = sg.getGwName();
+				String gwip = sg.getGwIP();
+				gw+="<gateway name=\"gwfxo8\">\n"
+			            +"     				<param name=\"proxy\" value=\""+gwname+"\" />\n"
+			            +"     				<param name=\"realm\" value=\""+gwip+"\" />\n"
+			            +"    				<param name=\"register\" value=\"false\" />\n"
+			            +"     				<param name=\"rtp-autofix-timing\" value=\"false\" />\n"
+			            +"     				<param name=\"caller-id-in-from\" value=\"true\" />\n"
+			            +"     				<param name=\"register-transport\" value=\"udp\" />\n"
+			            +"  			</gateway>\n";
+			}
+			System.out.println("网关信息:"+gw);
+			
+			String xml_gw= "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+		            +"<document type=\"freeswitch/xml\">\n"
+		            +"  <section name=\"configuration\" description=\"Various Configuration\">\n" 
+		            +"    <configuration name=\"sofia.conf\" description=\"sofia Endpoint\">\n"
+		            +"      <profiles>\n"
+		            +"         <profile name=\"external\">\n"
+		            +"            <gateways>\n" 
+		            +"  		    <gateway name=\"gwfxo8\">\n"
+		            +"     				<param name=\"proxy\" value=\"192.168.0.240:5077\" />\n"
+		            +"     				<param name=\"realm\" value=\"192.168.0.240:5077\" />\n"
+		            +"    				<param name=\"register\" value=\"false\" />\n"
+		            +"     				<param name=\"rtp-autofix-timing\" value=\"false\" />\n"
+		            +"     				<param name=\"caller-id-in-from\" value=\"true\" />\n"
+		            +"     				<param name=\"register-transport\" value=\"udp\" />\n"
+		            +"  			</gateway>\n"
+		            +"           </gateways>\n" 
+		            +"         </profile>\n" 
+		            +"\n" 
+		            +"     </profiles>\n" 
+		            +"   </configuration>\n" 
+		            +"  </section>\n" 
+		            +"</document>\n";
+		        return xml_gw;
+		
 		default:
 			return "not found"; 
 
 		}
 
-		/*
-		 * if("directory".equals(req.getParameter("section"))) {
-		 * 
-		 * 
-		 * 
-		 * 
-		 * }else { return "not found"; }
-		 */
 
 	}
 

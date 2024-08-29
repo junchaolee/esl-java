@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xbstar.esl.dao.SipGatewayMapper">
+	<resultMap id="BaseResultMap"
+		type="com.xbstar.esl.domain.SipGateway">
+		<result column="gw_name" jdbcType="VARCHAR"
+			property="gwName" />
+		<result column="gw_ip" jdbcType="VARCHAR"
+			property="gwIp" />
+		<result column="gw_type" jdbcType="VARCHAR"
+			property="gwType" />	
+	
+
+	</resultMap>
+	<sql id="Base_Column_List">
+			gw_name,gw_ip,gw_type
+	</sql>
+	<select id="findByType" parameterType="String"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from gateway
+		where gw_type = #{gwType,jdbcType=VARCHAR}
+	</select>
+</mapper>

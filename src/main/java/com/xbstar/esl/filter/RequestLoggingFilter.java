@@ -1,6 +1,5 @@
 package com.xbstar.esl.filter;
 import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,7 +23,7 @@ public class RequestLoggingFilter implements Filter {
         String writeValueAsString = objectMapper.writeValueAsString(request.getParameterMap());
         String sec = request.getParameter("section");
         if("dialplan".equals(sec)) {
-            System.out.println("【DIALPLAN请求参数】:"+writeValueAsString);
+            //System.out.println("【DIALPLAN请求参数】:"+writeValueAsString);
 
         }else if("directory".equals(sec)) {
             //System.out.println("【DIRECTORY请求参数】:"+writeValueAsString);

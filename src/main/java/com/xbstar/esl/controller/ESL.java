@@ -15,17 +15,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.PostConstruct;
-
 import org.apache.commons.lang3.StringUtils;
 
-import java.sql.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,17 +29,13 @@ import java.util.Map;
  *
  * @author SimonHua
  */
-@Controller
+@RestController
 public class ESL {
 	@Autowired
 	CallRecordServiceImpl callRecordService;
 	@Autowired
 	CallSoundServiceImpl callSoundService;
-
 	private static final Logger log = LoggerFactory.getLogger(ESL.class);
-	/**
-	 * autoload_configs目录event_socket.conf.xml文件中
-	 */
 	@Value("${host}")
 	private String host;
 	// 连接101叶总的被acl限制了，只能通过nginx代理18000访问18021
@@ -52,10 +43,9 @@ public class ESL {
 	private int port;
 	@Value("${password}")
 	private String password;
-
 	final Client client = new Client();
-	
-	//创建map存数据
+
+	// 创建map存数据
 	HashMap<String, String> legMap = new HashMap<String, String>();
 
 	@PostConstruct
@@ -67,7 +57,6 @@ public class ESL {
 			log.error("Connect failed", e);
 			return null;
 		}
-		
 
 		// 注册事件处理程序
 		client.addEventListener(new IEslEventListener() {
@@ -80,8 +69,8 @@ public class ESL {
 				String destination_number = map.get("Caller-Destination-Number");
 				String channelID = map.get("Unique-ID");
 				String direction = map.get("Call-Direction");
-				JSONObject json = JSONObject.parseObject(JSON.toJSONString(map));
-				
+				// JSONObject json = JSONObject.parseObject(JSON.toJSONString(map));
+
 				switch (event_name) {
 				case EventConstant.RECORD_START:
 					String filepath = map.get("Record-File-Path");
@@ -90,59 +79,51 @@ public class ESL {
 					callSound.setFilePath(filepath);
 					callSoundService.insert(callSound);
 					break;
+
 				case EventConstant.CHANNEL_CREATE:
-					System.out.println("【事件CHANNEL_CREATE】"+" | "+"通道ID："+channelID+"|"+ "【呼叫方向】："+direction);
-//					System.out.println(json);
-					//没有给180响应，直接给了200 OK
-					//uuid的说明：https://www.freeswitch.org.cn/books/references/2.48-uuid_answer.html
-					client.sendSyncApiCommand("uuid_answer",channelID);
+					System.out
+							.println("【事件CHANNEL_CREATE】" + " | " + "通道ID：" + channelID + "|" + "【呼叫方向】：" + direction);
+					// 没有给180响应，直接给了200 OK,可以在dialplan的park之前加入early-ring
+//					client.sendSyncApiCommand("uuid_answer",channelID);
 					break;
+
 				case EventConstant.CHANNEL_ANSWER:
-					System.out.println("【事件CHANNEL_ANSWER】"+"| "+"【通道ID】："+channelID+"|"+ "【呼叫方向】："+direction);
-					//收到应答ack，开始查找路由桥接被叫
-//					try {
-//						Thread.sleep(3000);
-//					} catch (InterruptedException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-					//String cmdstr="user/321321 &playback(/home/audio/demo.wav)";
-					String cmdstr= "{absolute_codec_string=^^:PCMA:PCMU,origination_caller_id_number="+caller_id_number+"}user/"+destination_number+" inline";
-					// originate会执行拨号计划查找，inline可以不需
-					//应该判断来电方向，如果不判断，总是有新的通道产生触发originate命令执行，将陷入死循环
-					if("inbound".equals(direction)) {
-						String result = client.sendAsyncApiCommand("originate",cmdstr);
-						System.out.println("【originate命令执行结果】："+result.toString());
+					/*
+					 * 1、收到应答ack，开始查找路由桥接被叫 originate会执行拨号计划查找，inline可以不需
+					 * 应该判断来电方向，如果不判断，总是有新的通道产生触发originate命令执行，将陷入死循环
+					 */
+					System.out
+							.println("【事件CHANNEL_ANSWER】" + "| " + "【通道ID】：" + channelID + "|" + "【呼叫方向】：" + direction);
+					String cmdstr = "{absolute_codec_string=^^:PCMA:PCMU,origination_caller_id_number="
+							+ caller_id_number + "}user/" + destination_number + " inline";
+
+					if ("inbound".equals(direction)) {
+						String result = client.sendAsyncApiCommand("originate", cmdstr);
+						System.out.println("【originate命令执行结果】：" + result.toString());
 					}
 
-					//开始执行uuid-bridge，将aleg、bleg连起来
-					if("inbound".equals(direction)) {
+					/* 2、开始执行uuid-bridge，将aleg、bleg连起来 */
+					if ("inbound".equals(direction)) {
 						legMap.put("a-leg-channelID", channelID);
-					}else if("outbound".equals(direction)) {
+					} else if ("outbound".equals(direction)) {
 						legMap.put("b-leg-channelID", channelID);
 					}
-					
 					String alegID = legMap.get("a-leg-channelID");
 					String blegID = legMap.get("b-leg-channelID");
-					//System.out.println("【A-legID】："+alegID+ "| "+"【B-legID】："+blegID);
-					
-					String cmdstr2=alegID+" "+blegID;
-					
-					if(StringUtils.isNotEmpty(alegID) && StringUtils.isNoneEmpty(blegID)) {
-//						client.sendSyncApiCommand("uuid_brideg",cmdstr2);
-						client.sendAsyncApiCommand("uuid_bridge", cmdstr2);
-						System.out.println("【uuid_bridge执行的参数】："+cmdstr2);
-					}
-					
-					
-					break;			
+					System.out.println("【A-legID】：" + alegID + "| " + "【B-legID】：" + blegID);
+					String cmdstr2 = alegID + " " + blegID;
+//					if (StringUtils.isNotEmpty(alegID) && StringUtils.isNoneEmpty(blegID)) {
+//						client.sendAsyncApiCommand("uuid_bridge", cmdstr2);
+//						System.out.println("【uuid_bridge执行的参数】：" + cmdstr2);
+//					}
+					break;
+
 				case EventConstant.RECORD_STOP:
 					break;
-//                    case EventConstant.CHANNEL_ANSWER:
-//                        break;
+
 				case EventConstant.CHANNEL_BRIDGE:
-//                        long startTime = Long.parseLong(map.get("Caller-Channel-Created-Time"));
-//                        long answerTime = Long.parseLong(map.get("Caller-Channel-Answered-Time"));
+					// long startTime = Long.parseLong(map.get("Caller-Channel-Created-Time"));
+					// long answerTime = Long.parseLong(map.get("Caller-Channel-Answered-Time"));
 					String startTime = map.get("Caller-Channel-Created-Time");
 					String answerTime = map.get("Caller-Channel-Answered-Time");
 					CallRecord record = new CallRecord();
@@ -154,20 +135,18 @@ public class ESL {
 					record.setAnswerStamp(answerTime);
 					callRecordService.insert(record);
 					System.out.println("【事件：CHANNEL_BRIDGE】");
-
 					break;
-//                    case EventConstant.CHANNEL_DESTROY:
-//                        break;
 				case EventConstant.CHANNEL_HANGUP_COMPLETE:
 					String hangupCause = map.get("variable_hangup_cause");
-//                        long endTime = Long.parseLong(map.get("Caller-Channel-Hangup-Time"));
+					// long endTime = Long.parseLong(map.get("Caller-Channel-Hangup-Time"));
 					String endTime = map.get("Caller-Channel-Hangup-Time");
 					CallRecord callRecord = callRecordService.findByuuid(call_uuid);
 					if (callRecord == null)
 						break;
 					callRecord.setEndStamp(endTime);
-//                        callRecord.setUduration(endTime-callRecord.getStartStamp());
-//                        int billsec = Integer.parseInt((endTime-callRecord.getAnswerStamp())/(1000*1000)+"");
+					// callRecord.setUduration(endTime-callRecord.getStartStamp());
+					// int billsec =
+					// Integer.parseInt((endTime-callRecord.getAnswerStamp())/(1000*1000)+"");
 					int billsec = 23;
 					callRecord.setBillsec(billsec);
 					callRecord.setHangupCause(hangupCause);
@@ -177,30 +156,18 @@ public class ESL {
 					legMap.remove("b-leg-channelID");
 					break;
 
-				//case EventConstant.HEARTBEAT:
-					//System.out.println("事件:HEAERBEAT");
-					//break;
-
 				default:
 					break;
 				}
 			}
 
-
-
-				
-
-
 			public void backgroundJobResultReceived(EslEvent event) {
-				 String uuid = event.getEventHeaders().get("Job-UUID");
+				String uuid = event.getEventHeaders().get("Job-UUID");
 				log.info("Background job result received+:" + event.getEventName() + "/" + event.getEventHeaders());// +"/"+JoinString(event.getEventHeaders())+"/"+JoinString(event.getEventBodyLines()));
 			}
 
 		});
-		
-		
-		
-		
+
 		client.setEventSubscriptions("plain", "all");
 
 		/*
@@ -212,46 +179,32 @@ public class ESL {
 		 * 
 		 * }
 		 */
+
 		return client;
 	}
 
 	@RequestMapping("/invoke")
-	@ResponseBody
 	public String invoke() {
 		String callResult = client.sendAsyncApiCommand("originate", "user/1002 &playback(/home/audio/demo.wav)");
 		return callResult.toString();
 	}
 
 	@RequestMapping("/call")
-	@ResponseBody
 	/*
 	 * originate <call_url> <exten>|&<application_name>(<app_args>) [<dialplan>]
-	 * [<context>] [<cid_name>] [<cid_num>] [<timeout_sec>]
-	 * 	命令说明
-	 * 它的第一个参数是呼叫字符串， 第二个参数可以是 & 加上一个 APP，APP的参数要放到 ( ) 里
-	 * 	eg：
-	 *  originate user/1000 &echo
-	 *	originate user/1000 &playback(/tmp/sound.wav)
-     *  originate user/1000 &record(/tmp/recording.wav)
+	 * [<context>] [<cid_name>] [<cid_num>] [<timeout_sec>] 命令说明 它的第一个参数是呼叫字符串，
+	 * 第二个参数可以是 & 加上一个 APP，APP的参数要放到 ( ) 里 eg： originate user/1000 &echo originate
+	 * user/1000 &playback(/tmp/sound.wav) originate user/1000
+	 * &record(/tmp/recording.wav)
 	 * 
 	 * 
 	 * 
 	 */
-	public String call(@RequestParam(name="called") String called) {
-		System.out.println("被叫号码:"+called);
-		String callResult = client.sendAsyncApiCommand("originate", "user/"+called+" &playback(/home/audio/demo.wav)");
+	public String call(@RequestParam(name = "called") String called) {
+		System.out.println("被叫号码:" + called);
+		String callResult = client.sendAsyncApiCommand("originate",
+				"user/" + called + " &playback(/home/audio/demo.wav)");
 		return callResult.toString();
 	}
-	
-	
-	/*
-	 * @GetMapping("/calls")
-	 * 
-	 * @ResponseBody 命令：originate public String call2(@RequestParam(name="called")
-	 * String called,@RequestParam(name="caller") String caller) {
-	 * System.out.println("被叫号码:"+called); String callResult =
-	 * client.sendAsyncApiCommand("originate",
-	 * "user/"+called+" &playback(/tmp/demo.wav)"); return callResult.toString(); }
-	 */
 
 }
