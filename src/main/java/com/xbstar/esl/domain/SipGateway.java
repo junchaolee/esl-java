@@ -1,5 +1,7 @@
 package com.xbstar.esl.domain;
 
+import javax.persistence.Id;
+
 /* +"  		    <gateway name=\"gwfxo8\">\n"
 +"     				<param name=\"proxy\" value=\"192.168.0.240:5077\" />\n"
 +"     				<param name=\"realm\" value=\"192.168.0.240:5077\" />\n"
@@ -28,6 +30,8 @@ vhf	无线电台网关
 
 
 public class SipGateway {
+	@Id
+	private Long id;
 	private String gwName;
 	private String gwIP;
 	private String gwType;
@@ -35,6 +39,12 @@ public class SipGateway {
 	
 	public String getGwName() {
 		return gwName;
+	}
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
 	}
 	public void setGwName(String gwName) {
 		this.gwName = gwName;

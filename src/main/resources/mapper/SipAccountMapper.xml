@@ -1,22 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xbstar.esl.dao.SipAccountMapper">
-	<resultMap id="BaseResultMap"
+	<resultMap id="BaseResultMap2"
 		type="com.xbstar.esl.domain.SipAccount">
 		<result column="userid" jdbcType="VARCHAR"
 			property="userId" />
 		<result column="password" jdbcType="VARCHAR"
 			property="password" />
-
+		<result column="codec" jdbcType="VARCHAR"
+			property="codec" />
+		<result column="createtime" jdbcType="VARCHAR"
+			property="createTime" />
 	</resultMap>
-	<sql id="Base_Column_List">
-			userid,password
+	
+	<sql id="Base_Column_List2">
+			userid,password,codec
 	</sql>
+	
 	<select id="findByUserId" parameterType="String"
-		resultMap="BaseResultMap">
+		resultMap="BaseResultMap2">
 		select
-		<include refid="Base_Column_List" />
+		<include refid="Base_Column_List2" />
 		from account
 		where userid = #{userId,jdbcType=VARCHAR}
 	</select>
+	
+	<select id="findAll" parameterType="String"
+		resultMap="BaseResultMap2">
+		select
+		<include refid="Base_Column_List2" />
+		from account
+	</select>
+	
+	
+	<insert id="insertAccount" parameterType="com.xbstar.esl.domain.SipAccount">
+		insert into account(userid,password,codec,createtime)
+		values(#{userId,jdbcType=VARCHAR},#{password,jdbcType=VARCHAR},#{codec,jdbcType=VARCHAR},#{createTime,jdbcType=VARCHAR})
+	
+	</insert>
 </mapper>

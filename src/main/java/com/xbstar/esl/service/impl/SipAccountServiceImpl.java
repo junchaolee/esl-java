@@ -11,6 +11,8 @@ import com.xbstar.esl.service.SipAccountService;
 
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 import javax.annotation.Resource;
 
 /**
@@ -18,7 +20,9 @@ import javax.annotation.Resource;
  */
 @Service
 public class SipAccountServiceImpl extends BaseServiceImpl<SipAccount> implements SipAccountService {
-    @Resource
+
+
+	@Resource
     private SipAccountMapper sipAccountMapper;
 
     @Override
@@ -30,4 +34,25 @@ public class SipAccountServiceImpl extends BaseServiceImpl<SipAccount> implement
     public SipAccount findByUserId(String userid){
        return sipAccountMapper.findByUserId(userid);
     }
+
+    //新增分机
+	@Override
+	public int insertAccount(SipAccount sip) {
+		//判断分机号是否已经存在，不存在才添加
+		SipAccount user = findByUserId(sip.getUserId());
+		if(user==null) {
+			return sipAccountMapper.insertAccount(sip);
+
+		}else {
+			return 0;
+		}
+		
+	}
+    
+    @Override
+	public List<SipAccount> findAll() {
+		// TODO Auto-generated method stub
+		return sipAccountMapper.findAll();
+	}
+    
 }

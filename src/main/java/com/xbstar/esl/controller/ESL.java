@@ -54,7 +54,7 @@ public class ESL {
 		try {
 			client.connect(host, port, password, 20);
 		} catch (InboundConnectionFailure e) {
-			log.error("Connect failed", e);
+			log.error("连接FS失败");
 			return null;
 		}
 
@@ -97,10 +97,10 @@ public class ESL {
 					String cmdstr = "{absolute_codec_string=^^:PCMA:PCMU,origination_caller_id_number="
 							+ caller_id_number + "}user/" + destination_number + " inline";
 
-					if ("inbound".equals(direction)) {
-						String result = client.sendAsyncApiCommand("originate", cmdstr);
-						System.out.println("【originate命令执行结果】：" + result.toString());
-					}
+//					if ("inbound".equals(direction)) {
+//						String result = client.sendAsyncApiCommand("originate", cmdstr);
+//						System.out.println("【originate命令执行结果】：" + result.toString());
+//					}
 
 					/* 2、开始执行uuid-bridge，将aleg、bleg连起来 */
 					if ("inbound".equals(direction)) {

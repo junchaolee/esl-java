@@ -5,6 +5,9 @@ public class SipAccount {
 	private String userId;
 	private String password;
 	private String codec;
+	private String createTime;
+	
+	
 	public String getCodec() {
 		return codec;
 	}
@@ -22,6 +25,12 @@ public class SipAccount {
 	}
 	public void setPassword(String password) {
 		this.password = password;
+	}
+	public String getCreateTime() {
+		return createTime;
+	}
+	public void setCreateTime(String createTime) {
+		this.createTime = createTime;
 	}
 
 	

@@ -1,5 +1,7 @@
 package com.xbstar.esl.service;
 
+import java.util.List;
+
 import com.xbstar.esl.domain.SipAccount;
 
 /**
@@ -8,4 +10,9 @@ import com.xbstar.esl.domain.SipAccount;
 public interface SipAccountService {
    
     SipAccount findByUserId(String userid);
+
+	int insertAccount(SipAccount sip);
+
+	List<SipAccount> findAll();
+	
 }

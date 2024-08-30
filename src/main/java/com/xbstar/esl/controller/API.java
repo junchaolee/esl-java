@@ -93,7 +93,7 @@ public class API {
 					+"      <extension name=\"2FXO\">\n"
 					+"        <condition field=\"destination_number\" expression=\"^([0-9]{11,12})$\">\n"
 					+"          <action application=\"export\" data=\"dialed_extension=$1\"/>\n"
-					+"          <action application=\"bridge\""+" data=\"sofia/gateway/gwfxo8/$1\"/>\n"
+					+"          <action application=\"bridge\""+" data=\"{absolute_codec_string=^^:PCMA:PCMU}sofia/gateway/gwfxo8/$1\"/>\n"
 					+"        </condition>\n"
 					+"      </extension>\n"
 					+"    </context>\n"
