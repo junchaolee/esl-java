@@ -3,7 +3,10 @@ package com.xbstar.esl.common;
 import java.util.List;
 
 /**
- * Created by Simon on 2019/9/9 13:38
+ * @Description:
+ * @Author:janus
+ * @Date:2024年9月1日上午12:03:56
+ * @Version:1.0.0
  */
 public interface BaseService<T> {
     List<T> findAll();

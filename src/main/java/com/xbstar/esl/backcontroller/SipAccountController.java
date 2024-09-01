@@ -15,6 +15,13 @@ import com.xbstar.esl.service.SipAccountService;
 import com.xbstar.esl.util.AlvesJSONResult;
 import com.xbstar.esl.util.DateUtil;
 
+/**
+ * @Description: 分机相关
+ * @Class:SipAccountController.java
+ * @Author:janus
+ * @Date:2024年8月31日下午11:55:48
+ * @Version:1.0.0
+ */
 @RestController
 @RequestMapping("/sipaccount")
 public class SipAccountController {

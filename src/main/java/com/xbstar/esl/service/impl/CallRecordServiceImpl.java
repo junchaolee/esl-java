@@ -10,7 +10,10 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 
 /**
- * Created by Simon on 2019/9/9 13:49
+ * @Description:
+ * @Author:janus
+ * @Date:2024年9月1日上午12:04:31
+ * @Version:1.0.0
  */
 @Service
 public class CallRecordServiceImpl extends BaseServiceImpl<CallRecord> implements CallRecordService {

@@ -4,10 +4,13 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import com.fasterxml.jackson.databind.ObjectMapper;
  
-/*设置过滤器，再将过滤器绑定到springboot的配置类
-*/
-
-
+/**
+ * @Description: 打印请求参数的过滤器
+ * @Class:RequestLoggingFilter.java
+ * @Author:janus
+ * @Date:2024年8月31日下午11:58:50
+ * @Version:1.0.0
+ */
 public class RequestLoggingFilter implements Filter {
  
     @Override

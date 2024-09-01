@@ -16,7 +16,10 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 
 /**
- * Created by SimonHua on 2019/9/9.
+ * @Description:
+ * @Author:janus
+ * @Date:2024年9月1日上午12:02:56
+ * @Version:1.0.0
  */
 @Configuration
 public class DruidConfiguration {

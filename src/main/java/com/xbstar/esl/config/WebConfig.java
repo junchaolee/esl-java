@@ -5,6 +5,12 @@ import org.springframework.context.annotation.Configuration;
 
 import com.xbstar.esl.filter.RequestLoggingFilter;
  
+/**
+ * @Description:
+ * @Author:janus
+ * @Date:2024年9月1日上午12:02:39
+ * @Version:1.0.0
+ */
 @Configuration
 public class WebConfig {
  

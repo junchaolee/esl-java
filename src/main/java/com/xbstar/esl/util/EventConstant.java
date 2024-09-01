@@ -1,7 +1,12 @@
 package com.xbstar.esl.util;
 
+
 /**
- * Created by Simon on 2019/9/6 14:30
+ * @Description:
+ * @Class:EventConstant.java
+ * @Author:janus
+ * @Date:2024年8月31日下午11:59:58
+ * @Version:1.0.0
  */
 public class EventConstant {
 
@@ -13,5 +18,6 @@ public class EventConstant {
 	public static final String CHANNEL_HANGUP_COMPLETE = "CHANNEL_HANGUP_COMPLETE";
 	public static final String HEARTBEAT = "HEARTBEAT";
 	public static final String CHANNEL_CREATE = "CHANNEL_CREATE";
+	public static final String CUSTOM = "CUSTOM";
 
 }

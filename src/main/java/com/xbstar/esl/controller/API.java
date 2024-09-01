@@ -7,12 +7,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.xbstar.esl.domain.Conference;
 import com.xbstar.esl.domain.SipAccount;
 import com.xbstar.esl.domain.SipGateway;
 import com.xbstar.esl.service.impl.SipAccountServiceImpl;
 import com.xbstar.esl.service.impl.SipGatewayServiceImpl;
 
 
+/**
+ * @Description:
+ * @Class:API.java
+ * @Author:janus
+ * @Date:2024年8月31日下午11:53:23
+ * @Version:1.0.0
+ */
 @RestController
 @RequestMapping("/api")
 public class API {
@@ -170,4 +179,42 @@ public class API {
 
 	}
 
+	
+	/**
+	 * 创建会议
+	 * 创建一个会议对象，对象里包含有会议名称、成员、并将会议信息存储到表结构
+	 * 先期只做音频，后期加上视频做判断
+	 */
+	@RequestMapping("/conference/create")
+	public void confCreate() {
+		String cmdstr = "6577786@video-mcu-stereo bgdial {absolute_codec_string=^^:pcma:pcmu}user/721721 6577786 conference";
+		ESL.client.sendAsyncApiCommand("conference", cmdstr);
+	}
+	
+	
+	/**
+	 * 添加会议成员
+	 * @return
+	 */
+	@RequestMapping("/conference/addMember")
+	public Conference confAdd() {
+
+		
+		
+		return null;
+	}
+	
+	
+	/**
+	 * 剔出会议成员
+	 * @return
+	 */
+	@RequestMapping("/conference/delMember")
+	public Conference confDel() {
+
+		
+		
+		return null;
+	}
+	
 }

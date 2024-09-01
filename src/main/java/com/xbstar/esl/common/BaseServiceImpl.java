@@ -2,8 +2,12 @@ package com.xbstar.esl.common;
 
 import java.util.List;
 
+
 /**
- * Created by Simon on 2019/9/9 13:39
+ * @Description:
+ * @Author:janus
+ * @Date:2024年9月1日上午12:03:39
+ * @Version:1.0.0
  */
 public abstract  class BaseServiceImpl<T> implements BaseService<T> {
     public abstract BaseMapper<T> getMapper();

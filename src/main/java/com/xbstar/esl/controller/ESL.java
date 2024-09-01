@@ -20,17 +20,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 
+
 /**
- * Java esl调用FreeSWITCH发起呼叫等
- *
- * @author SimonHua
+ * @Description: 连接fs，事件处理
+ * @Author:janus
+ * @Date:2024年8月31日下午11:54:06
+ * @Version:1.0.0
  */
 @RestController
-public class ESL {
+public final class ESL {
 	@Autowired
 	CallRecordServiceImpl callRecordService;
 	@Autowired
@@ -43,7 +44,8 @@ public class ESL {
 	private int port;
 	@Value("${password}")
 	private String password;
-	final Client client = new Client();
+	
+	public static final Client client = new Client();
 
 	// 创建map存数据
 	HashMap<String, String> legMap = new HashMap<String, String>();
@@ -69,7 +71,7 @@ public class ESL {
 				String destination_number = map.get("Caller-Destination-Number");
 				String channelID = map.get("Unique-ID");
 				String direction = map.get("Call-Direction");
-				// JSONObject json = JSONObject.parseObject(JSON.toJSONString(map));
+				JSONObject json = JSONObject.parseObject(JSON.toJSONString(map));
 
 				switch (event_name) {
 				case EventConstant.RECORD_START:
@@ -155,6 +157,16 @@ public class ESL {
 					legMap.remove("a-leg-channelID");
 					legMap.remove("b-leg-channelID");
 					break;
+				case EventConstant.CUSTOM:
+					if("conference-create".equals(map.get("Action"))) {
+						System.out.println("【会议创建】："+json);
+					}else if("del-member".equals(map.get("Action"))) {
+						System.out.println("【成员离开】："+json);
+
+					}else if("add-member".equals(map.get("Action"))) {
+						System.out.println("【成员入会】："+json);
+
+					}
 
 				default:
 					break;
@@ -179,6 +191,9 @@ public class ESL {
 		 * 
 		 * }
 		 */
+		if(client.canSend()) {
+			System.out.println("连接FS SOCKET成功!!!");
+		}
 
 		return client;
 	}

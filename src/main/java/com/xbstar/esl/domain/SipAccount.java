@@ -1,5 +1,12 @@
 package com.xbstar.esl.domain;
 
+/**
+ * @Description:
+ * @Class:SipAccount.java
+ * @Author:janus
+ * @Date:2024年8月31日下午11:58:15
+ * @Version:1.0.0
+ */
 public class SipAccount {
 	
 	private String userId;

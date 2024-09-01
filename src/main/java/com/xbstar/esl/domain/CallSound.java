@@ -3,7 +3,11 @@ package com.xbstar.esl.domain;
 import javax.persistence.Id;
 
 /**
- * Created by Simon on 2019/9/9 16:37
+ * @Description:
+ * @Class:CallSound.java
+ * @Author:janus
+ * @Date:2024年8月31日下午11:57:59
+ * @Version:1.0.0
  */
 public class CallSound {
 

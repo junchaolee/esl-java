@@ -2,7 +2,13 @@ package com.xbstar.esl.domain;
 
 import javax.persistence.Id;
 
-
+/**
+ * @Description:
+ * @Class:CallRecord.java
+ * @Author:janus
+ * @Date:2024年8月31日下午11:57:53
+ * @Version:1.0.0
+ */
 public class CallRecord {
     @Id
     private Long id;
