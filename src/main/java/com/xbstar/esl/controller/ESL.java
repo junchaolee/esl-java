@@ -4,8 +4,12 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.xbstar.esl.domain.CallRecord;
 import com.xbstar.esl.domain.CallSound;
+import com.xbstar.esl.domain.Conference;
+import com.xbstar.esl.service.ConferenceService;
 import com.xbstar.esl.service.impl.CallRecordServiceImpl;
 import com.xbstar.esl.service.impl.CallSoundServiceImpl;
+import com.xbstar.esl.util.AlvesJSONResult;
+import com.xbstar.esl.util.DateUtil;
 import com.xbstar.esl.util.EventConstant;
 import org.freeswitch.esl.client.IEslEventListener;
 import org.freeswitch.esl.client.inbound.Client;
@@ -32,6 +36,8 @@ import java.util.Map;
  */
 @RestController
 public final class ESL {
+	@Autowired
+	ConferenceService confService;
 	@Autowired
 	CallRecordServiceImpl callRecordService;
 	@Autowired
@@ -159,14 +165,34 @@ public final class ESL {
 					break;
 				case EventConstant.CUSTOM:
 					if("conference-create".equals(map.get("Action"))) {
-						System.out.println("【会议创建】："+json);
+						log.info("【会议创建】："+json);
 					}else if("del-member".equals(map.get("Action"))) {
-						System.out.println("【成员离开】："+json);
+						log.info("【成员离开】："+json);
 
 					}else if("add-member".equals(map.get("Action"))) {
-						System.out.println("【成员入会】："+json);
+						log.info("【成员入会】："+json);
+						//添加成员的时候，存储会议数据到数据库
+						String confName=map.get("Conference-Name");
+						String mID = map.get("Member-ID");
+						String isVideo = map.get("Video");
+						
+						Conference conf = new Conference();
+						conf.setConfName(confName);
+						conf.setMemberId(mID);
+						conf.setIsVideo(isVideo);
+						conf.setCreateTime(DateUtil.getNowStr());
+						int save = confService.insertConf(conf);
+						if (save != 0) {
+							log.info("conference写入数据库成功");
+						} else {
+							log.info("conference写入数据库失败");
+						}
 
+					}else if("conference-destroy".equals(map.get("Action"))) {
+						log.info("【会议销毁】："+json);
 					}
+					
+					break;
 
 				default:
 					break;
@@ -191,9 +217,9 @@ public final class ESL {
 		 * 
 		 * }
 		 */
-		if(client.canSend()) {
-			System.out.println("连接FS SOCKET成功!!!");
-		}
+//		if(client.canSend()) {
+//			System.out.println("连接FS SOCKET成功!!!");
+//		}
 
 		return client;
 	}

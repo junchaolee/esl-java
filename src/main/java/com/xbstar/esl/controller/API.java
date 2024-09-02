@@ -1,10 +1,12 @@
 package com.xbstar.esl.controller;
 
 import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -13,6 +15,7 @@ import com.xbstar.esl.domain.SipAccount;
 import com.xbstar.esl.domain.SipGateway;
 import com.xbstar.esl.service.impl.SipAccountServiceImpl;
 import com.xbstar.esl.service.impl.SipGatewayServiceImpl;
+import com.xbstar.esl.util.AlvesJSONResult;
 
 
 /**
@@ -33,6 +36,9 @@ public class API {
 	
 	@Autowired
 	SipGatewayServiceImpl sipGatewayService;
+	
+//	@Autowired
+//	Conference conf;
 
 
 	@RequestMapping("/sipAccount/login")
@@ -186,35 +192,73 @@ public class API {
 	 * 先期只做音频，后期加上视频做判断
 	 */
 	@RequestMapping("/conference/create")
-	public void confCreate() {
-		String cmdstr = "6577786@video-mcu-stereo bgdial {absolute_codec_string=^^:pcma:pcmu}user/721721 6577786 conference";
+	public AlvesJSONResult confCreate(@Validated @RequestBody Conference conf) {
+		//生成会议名(ID)
+		String confName = RandomStringUtils.randomNumeric(8);
+		//主持人
+		String userId = conf.getAccount().getUserId();
+		String cmdstr = confName+"@video-mcu-stereo bgdial {absolute_codec_string=^^:pcma:pcmu}user/"+userId+" "+confName+" conference";
 		ESL.client.sendAsyncApiCommand("conference", cmdstr);
+//		String cmdStr2="6577786 bgdial {absolute_codec_string=^^:pcma:pcmu}user/321321";
+//		ESL.client.sendAsyncApiCommand("conference", cmdStr2);
+		
+		
+		return AlvesJSONResult.ok("会议【"+confName+"】创建成功,主持人："+userId);
+
 	}
 	
 	
+	
 	/**
-	 * 添加会议成员
+	 * @param:会议名+成员分机
+	 * 添加会议成员+
+	 * 如果添加N个成员，是执行N次接口调用
+	 * 还是一次调用接口，获取所有成员信息
+	 * 循环执行？
+	 * 
+	 * 添加会议成员时，根据事件存储结果存储信息到数据库
 	 * @return
 	 */
 	@RequestMapping("/conference/addMember")
-	public Conference confAdd() {
-
+	public AlvesJSONResult confAdd(@Validated @RequestBody Conference con) {
+		String userId = con.getAccount().getUserId();
 		
-		
-		return null;
+		String confName = con.getConfName();
+		System.out.println("成员分机："+userId+"|会议名："+confName);
+		String cmdStr=confName+" bgdial {absolute_codec_string=^^:pcma:pcmu}user/"+userId;
+		ESL.client.sendAsyncApiCommand("conference", cmdStr);
+		return AlvesJSONResult.ok("会议成员【"+userId+"】添加成功");
 	}
 	
 	
 	/**
-	 * 剔出会议成员
+	 * @param:会议名+成员分机
+	 * 踢出会议成员
+	 * 通过成员获取所在会议的memberID
 	 * @return
 	 */
 	@RequestMapping("/conference/delMember")
-	public Conference confDel() {
-
+	public AlvesJSONResult confDel(@Validated @RequestBody Conference con) {
+		String confName = con.getConfName();
+		String userId = con.getAccount().getUserId();
 		
+		return AlvesJSONResult.ok("会议成员【"+userId+"】已踢出");
+	}
+	
+	/**
+	 * 销毁会议
+	 * conference 6577786 hup all
+	 */
+	@RequestMapping("/conference/destroy")
+	public AlvesJSONResult confDestroy(@Validated @RequestBody Conference con){
+		//获取会议名,直接传参
+		//通过会议成员获取
+		String confName = con.getConfName();
 		
-		return null;
+		String res = ESL.client.sendAsyncApiCommand("conference", confName+" hup all");
+		
+		return AlvesJSONResult.ok("会议【"+confName+"】销毁成功");
+		
 	}
 	
 }
