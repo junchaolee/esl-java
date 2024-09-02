@@ -20,18 +20,29 @@ import com.xbstar.esl.service.ConferenceService;
 public class ConferenceServiceImpl  extends BaseServiceImpl<Conference> implements ConferenceService {
 	
 	@Resource
-	private ConferenceMapper conferenceMapper;
+	private ConferenceMapper confMapper;
 
 	@Override
 	public int insertConf(Conference conf) {
 		// TODO Auto-generated method stub
-		return conferenceMapper.insert(conf);
+		return confMapper.insert(conf);
 	}
 
 	@Override
 	public BaseMapper<Conference> getMapper() {
 		// TODO Auto-generated method stub
-		return this.conferenceMapper;
+		return this.confMapper;
+	}
+
+	/**
+	 * @param confName
+	 * @param userId
+	 * @return 
+	 */
+	public String queryMemberId(String confName, String userId) {
+		// TODO Auto-generated method stub
+		return confMapper.queryMemberId(confName,userId);
+		
 	}
 	
 	

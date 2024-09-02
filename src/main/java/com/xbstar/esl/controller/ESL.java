@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.xbstar.esl.domain.CallRecord;
 import com.xbstar.esl.domain.CallSound;
 import com.xbstar.esl.domain.Conference;
+import com.xbstar.esl.domain.SipAccount;
 import com.xbstar.esl.service.ConferenceService;
 import com.xbstar.esl.service.impl.CallRecordServiceImpl;
 import com.xbstar.esl.service.impl.CallSoundServiceImpl;
@@ -172,14 +173,11 @@ public final class ESL {
 					}else if("add-member".equals(map.get("Action"))) {
 						log.info("【成员入会】："+json);
 						//添加成员的时候，存储会议数据到数据库
-						String confName=map.get("Conference-Name");
-						String mID = map.get("Member-ID");
-						String isVideo = map.get("Video");
-						
 						Conference conf = new Conference();
-						conf.setConfName(confName);
-						conf.setMemberId(mID);
-						conf.setIsVideo(isVideo);
+						conf.setUserId(map.get("Caller-Caller-ID-Number"));
+						conf.setConfName(map.get("Conference-Name"));
+						conf.setMemberId(map.get("Member-ID"));
+						conf.setIsVideo(map.get("Video"));
 						conf.setCreateTime(DateUtil.getNowStr());
 						int save = confService.insertConf(conf);
 						if (save != 0) {

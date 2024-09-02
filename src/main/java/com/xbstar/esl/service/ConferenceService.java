@@ -13,4 +13,11 @@ public interface ConferenceService {
 	
 	int insertConf(Conference conf);
 
+	/**
+	 * @param confName
+	 * @param userId
+	 * @return 
+	 */
+	String queryMemberId(String confName, String userId);
+
 }

@@ -18,4 +18,11 @@ import com.xbstar.esl.domain.Conference;
 public interface ConferenceMapper extends BaseMapper<Conference> {
 	int insertConf(Conference conf);
 
+	/**
+	 * @param confName
+	 * @param userId
+	 * @return
+	 */
+	String queryMemberId(String confName, String userId);
+
 }

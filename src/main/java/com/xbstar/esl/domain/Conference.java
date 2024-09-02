@@ -11,7 +11,7 @@ import javax.validation.Valid;
 public class Conference {
 	private String confName;//会议名
 	@Valid
-	private SipAccount account;//会议成员
+	private String userId;//会议成员
 	private String isVideo;//是否视频会议
 	private String memberId;//会议中成员ID
 	private String createTime;
@@ -39,18 +39,19 @@ public class Conference {
 		this.confName = confName;
 	}
 
-
-	public SipAccount getAccount() {
-		return account;
-	}
-	public void setAccount(SipAccount account) {
-		this.account = account;
-	}
 	public String getIsVideo() {
 		return isVideo;
 	}
 	public void setIsVideo(String isVideo) {
 		this.isVideo = isVideo;
+	}
+	
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
 	}
 
 

@@ -1,6 +1,8 @@
 package com.xbstar.esl.controller;
 
 import java.util.List;
+
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.xbstar.esl.domain.Conference;
 import com.xbstar.esl.domain.SipAccount;
 import com.xbstar.esl.domain.SipGateway;
+import com.xbstar.esl.service.ConferenceService;
+import com.xbstar.esl.service.impl.ConferenceServiceImpl;
 import com.xbstar.esl.service.impl.SipAccountServiceImpl;
 import com.xbstar.esl.service.impl.SipGatewayServiceImpl;
 import com.xbstar.esl.util.AlvesJSONResult;
@@ -37,8 +41,10 @@ public class API {
 	@Autowired
 	SipGatewayServiceImpl sipGatewayService;
 	
-//	@Autowired
-//	Conference conf;
+	@Resource
+	ConferenceService confService;
+	
+
 
 
 	@RequestMapping("/sipAccount/login")
@@ -196,7 +202,7 @@ public class API {
 		//生成会议名(ID)
 		String confName = RandomStringUtils.randomNumeric(8);
 		//主持人
-		String userId = conf.getAccount().getUserId();
+		String userId = conf.getUserId();
 		String cmdstr = confName+"@video-mcu-stereo bgdial {absolute_codec_string=^^:pcma:pcmu}user/"+userId+" "+confName+" conference";
 		ESL.client.sendAsyncApiCommand("conference", cmdstr);
 //		String cmdStr2="6577786 bgdial {absolute_codec_string=^^:pcma:pcmu}user/321321";
@@ -221,7 +227,7 @@ public class API {
 	 */
 	@RequestMapping("/conference/addMember")
 	public AlvesJSONResult confAdd(@Validated @RequestBody Conference con) {
-		String userId = con.getAccount().getUserId();
+		String userId = con.getUserId();
 		
 		String confName = con.getConfName();
 		System.out.println("成员分机："+userId+"|会议名："+confName);
@@ -240,8 +246,9 @@ public class API {
 	@RequestMapping("/conference/delMember")
 	public AlvesJSONResult confDel(@Validated @RequestBody Conference con) {
 		String confName = con.getConfName();
-		String userId = con.getAccount().getUserId();
-		
+		String userId = con.getUserId();
+		String mId=confService.queryMemberId(confName,userId);
+		ESL.client.sendAsyncApiCommand("conference", confName+" kick "+mId);
 		return AlvesJSONResult.ok("会议成员【"+userId+"】已踢出");
 	}
 	
@@ -254,6 +261,7 @@ public class API {
 		//获取会议名,直接传参
 		//通过会议成员获取
 		String confName = con.getConfName();
+		
 		
 		String res = ESL.client.sendAsyncApiCommand("conference", confName+" hup all");
 		
