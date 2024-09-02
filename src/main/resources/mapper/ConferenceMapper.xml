@@ -3,18 +3,21 @@
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xbstar.esl.dao.ConferenceMapper">
-	<resultMap id="BaseResultMap3"
-		type="com.xbstar.esl.domain.Conference">
-		<result column="conf_name" jdbcType="VARCHAR"
-			property="confName" />
-		<result column="member_id" jdbcType="VARCHAR"
-			property="memberId" />
+	<resultMap id="conferenceMap" type="com.xbstar.esl.domain.Conference">
+		
+		<association property="account" javaType="com.xbstar.esl.domain.SipAccount">
+
+		<result column="userid" jdbcType="VARCHAR"
+			property="userId" />
+		<result column="password" jdbcType="VARCHAR"
+			property="password" />
+		<result column="codec" jdbcType="VARCHAR"
+			property="codec" />
 		<result column="createtime" jdbcType="VARCHAR"
 			property="createTime" />
-		<result/>
-		<result column="is_video" jdbcType="VARCHAR"
-			property="isVideo" />
-		<result/>
+		</association>
+
+
 			
 	</resultMap>
 	
@@ -23,8 +26,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	</sql>
 
 	<insert id="insertConf" parameterType="com.xbstar.esl.domain.Conference">
-		insert into conference(conf_name,member_id,createtime,is_video)
-		values(#{confName,jdbcType=VARCHAR},#{memberId,jdbcType=VARCHAR},#{createTime,jdbcType=VARCHAR},#{isVideo,jdbcType=VARCHAR})
+		insert into conference(conf_name,member_id,createtime,is_video,user_id)
+		values(#{confName,jdbcType=VARCHAR},#{memberId,jdbcType=VARCHAR},#{createTime,jdbcType=VARCHAR},#{isVideo,jdbcType=VARCHAR},#{account,jdbcType=com.xbstar.esl.domain.SipAccount)
 	
 	</insert>
 </mapper>
