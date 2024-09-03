@@ -1,10 +1,12 @@
 package com.xbstar.esl.controller;
 
+import java.net.URL;
 import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
@@ -20,6 +22,7 @@ import com.xbstar.esl.service.impl.ConferenceServiceImpl;
 import com.xbstar.esl.service.impl.SipAccountServiceImpl;
 import com.xbstar.esl.service.impl.SipGatewayServiceImpl;
 import com.xbstar.esl.util.AlvesJSONResult;
+import com.xbstar.esl.util.ReadXml;
 
 
 /**
@@ -47,8 +50,8 @@ public class API {
 
 
 
-	@RequestMapping("/sipAccount/login")
-	public String login(HttpServletRequest req) {
+	@RequestMapping("/mediaserver")
+	public String mediaserverConfig(HttpServletRequest req) {
 		// 根据参数数据判断数据库中是否有此数据
 		// 【有】 生成xml数据
 		// 【没有】 返回not found -> 注册失败
@@ -142,8 +145,9 @@ public class API {
 			return xml_default;
 			
 		case "configuration":
+			//&&"external".equals(req.getParameter("profile"))
 			
-			if("sofia.conf".equals(req.getParameter("key_value"))&&"external".equals(req.getParameter("profile"))) {
+			if("sofia.conf".equals(req.getParameter("key_value"))) {
 				String gws="";
 				List<SipGateway> gwList = sipGatewayService.findAll();
 				for(SipGateway sg:gwList) {
@@ -173,8 +177,15 @@ public class API {
 			            +"   </configuration>\n" 
 			            +"  </section>\n" 
 			            +"</document>\n";
-				System.out.println(xml_gw);
-			    return xml_gw;
+//				URL resource = API.class.getClassLoader().getResource("sofia.conf.data");
+
+				URL resource = Thread.currentThread().getContextClassLoader().getResource("sofia.conf.data");
+//				String xml_all = ReadXml.readXMLFile("C:\\Users\\tong\\Desktop\\sofia.conf.xml");
+				String xml_all = ReadXml.readXMLFile(ClassPath:);
+				System.out.println(xml_all);
+
+				
+			    return xml_all;
 				
 			}else {
 				return "nothing";
@@ -264,8 +275,15 @@ public class API {
 		
 		
 		String res = ESL.client.sendAsyncApiCommand("conference", confName+" hup all");
+		if(StringUtils.isNoneEmpty(res)) {
+			
+			return AlvesJSONResult.ok("会议【"+confName+"】销毁成功");
+
+		}else {
+			return AlvesJSONResult.ok("会议【"+confName+"】销毁失败");
+
+		}
 		
-		return AlvesJSONResult.ok("会议【"+confName+"】销毁成功");
 		
 	}
 	
