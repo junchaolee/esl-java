@@ -5,7 +5,7 @@ import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
 
-import com.xbstar.esl.controller.API;
+import com.xbstar.esl.controller.MediaServerConfig;
 
 public class ModifyFileLine {
 	public static void main(String[] args) {
@@ -22,11 +22,15 @@ public class ModifyFileLine {
 			e.printStackTrace();
 		}
 		// 修改第三行的内容
-		int lineNumberToModify = 128; // 第三行的索引为2
-		String startPortContent = "    <param name=\"rtp-start-port\" value=\"44020\"/>";
-		String endPortContent = "    <param name=\"rtp-end-port\" value=\"44030\"/>";
+		int lineNumberToModify = 131; // 第三行的索引为2
+		String startPortContent = "    <param name=\"rtp-start-port\" value=\"40000\"/>";
+		String endPortContent = "    <param name=\"rtp-end-port\" value=\"42100\"/>";
 		lines.set(lineNumberToModify, startPortContent);
-		lines.set(129, endPortContent);
+		lines.set(132, endPortContent);
+		
+		String str1 = lines.get(20);
+		int size = lines.size();
+		System.out.println(str1);
 		// 将修改后的内容写回到文件中
 		try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(filePath))) {
 			for (String line : lines) {
@@ -37,9 +41,6 @@ public class ModifyFileLine {
 			e.printStackTrace();
 		}
 		
-		
-		URL abc = ModifyFileLine.class.getClassLoader().getResource("sofia.conf.data");
-		System.out.println(abc);
 	}
 	
 

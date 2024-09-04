@@ -65,3 +65,4 @@ target
 bin
 log
 mybatis-generator.xml
+*.data

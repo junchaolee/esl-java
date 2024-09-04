@@ -28,6 +28,8 @@
  
 
 <profile name="external">
+
+
   <!-- http://wiki.freeswitch.org/wiki/Sofia_Configuration_Files -->
   <!-- This profile is only for outbound registrations to providers -->
 	
@@ -369,7 +371,7 @@
     <!--<param name="inbound-bypass-media" value="true"/>-->
 
     <!--Uncomment to set all inbound calls to proxy media mode-->
-    <!--<param name="inbound-proxy-media" value="true"/>-->
+    <param name="inbound-proxy-media" value="false"/>
 
     <!-- Let calls hit the dialplan before selecting codec for the a-leg -->
     <param name="inbound-late-negotiation" value="false"/>

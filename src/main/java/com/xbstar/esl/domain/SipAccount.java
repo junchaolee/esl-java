@@ -39,6 +39,11 @@ public class SipAccount {
 	public void setCreateTime(String createTime) {
 		this.createTime = createTime;
 	}
+	@Override
+	public String toString() {
+		return "SipAccount [userId=" + userId + ", password=" + password + ", codec=" + codec + ", createTime="
+				+ createTime + "]";
+	}
 
 	
 }

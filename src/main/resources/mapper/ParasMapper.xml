@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xbstar.esl.dao.ParasMapper">
+	<resultMap id="BaseResultMap2"
+		type="com.xbstar.esl.domain.ParasInfo">
+		<result column="parameter_name" jdbcType="VARCHAR"
+			property="parameterName" />
+		<result column="parameter_value" jdbcType="VARCHAR"
+			property="parameterValue" />
+		<result column="create_time" jdbcType="VARCHAR"
+			property="createTime" />
+
+	</resultMap>
+	
+	<sql id="Base_Column_List2">
+			parameter_name,parameter_value,create_time
+	</sql>
+	
+	<select id="findByName" parameterType="String"
+		resultMap="BaseResultMap2">
+		select
+		<include refid="Base_Column_List2" />
+		from parameters_info
+		where parameter_name = #{parameterName,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="findAll" parameterType="String"
+		resultMap="BaseResultMap2">
+		select
+		<include refid="Base_Column_List2" />
+		from parameters_info
+	</select>
+	
+	
+	<insert id="insertParameter" parameterType="com.xbstar.esl.domain.ParasInfo">
+		insert into parameters_info(parameter_name,parameter_value,create_time)
+		values(#{parameterName,jdbcType=VARCHAR},#{parameterValue,jdbcType=VARCHAR},#{createTime,jdbcType=VARCHAR})
+	
+	</insert>
+</mapper>
