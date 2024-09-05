@@ -170,19 +170,19 @@ public class MediaServerConfig {
 			            +"  </section>\n" 
 			            +"</document>\n";
 				//修改switch.conf.xml的rtp端口范围 
-				String rtpStartPort = parasService.findByName("system.rtp.port.start").getParameterValue();
-				String rtpEndPort = parasService.findByName("system.rtp.port.end").getParameterValue();
+//				String rtpStartPort = parasService.findByName("system.rtp.port.start").getParameterValue();
+//				String rtpEndPort = parasService.findByName("system.rtp.port.end").getParameterValue();
 								  
-				System.out.println("【rtp开始端口】："+rtpStartPort);
-				System.out.println("【rtp结束端口】："+rtpEndPort);
-				String startPortContent="    <param name=\"rtp-start-port\" value=\""+rtpStartPort+"\"/>";
-				String endPortContent="    <param name=\"rtp-end-port\" value=\""+rtpEndPort+"\"/>";
+//				System.out.println("【rtp开始端口】："+rtpStartPort);
+//				System.out.println("【rtp结束端口】："+rtpEndPort);
+//				String startPortContent="    <param name=\"rtp-start-port\" value=\""+rtpStartPort+"\"/>";
+//				String endPortContent="    <param name=\"rtp-end-port\" value=\""+rtpEndPort+"\"/>";
 				
 //				/opt/etc/freeswitch/autoload_configs/switch.conf.xml
-				String switch_path = Thread.currentThread().getContextClassLoader().getResource("switch.conf.data").getPath();
+//				String switch_path = Thread.currentThread().getContextClassLoader().getResource("switch.conf.data").getPath();
 				
-				ModifyConfig.modifyOneline(switch_path, 149,startPortContent); 
-				ModifyConfig.modifyOneline(switch_path, 150, endPortContent);
+//				ModifyConfig.modifyOneline(switch_path, 149,startPortContent); 
+//				ModifyConfig.modifyOneline(switch_path, 150, endPortContent);
 				 
 				String sofia_path = Thread.currentThread().getContextClassLoader().getResource("sofia.conf.data").getPath();
 				String xml_all = ReadXml.readXMLFile(sofia_path);
