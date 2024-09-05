@@ -2,7 +2,7 @@ package com.xbstar.esl.util;
 
 
 /**
- * @Description:
+ * @Description:https://developer.signalwire.com/freeswitch/FreeSWITCH-Explained/Event-Types/#event-type-name-or-class-list
  * @Class:EventConstant.java
  * @Author:janus
  * @Date:2024年8月31日下午11:59:58
@@ -19,5 +19,7 @@ public class EventConstant {
 	public static final String HEARTBEAT = "HEARTBEAT";
 	public static final String CHANNEL_CREATE = "CHANNEL_CREATE";
 	public static final String CUSTOM = "CUSTOM";
+	public static final String CALL_DETAIL = "CALL_DETAIL";
+	public static final String CHANNEL_STATE = "CHANNEL_STATE";
 
 }

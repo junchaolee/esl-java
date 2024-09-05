@@ -165,32 +165,40 @@ public final class ESL {
 					legMap.remove("b-leg-channelID");
 					break;
 				case EventConstant.CUSTOM:
-					if("conference-create".equals(map.get("Action"))) {
-						log.info("【会议创建】："+json);
-					}else if("del-member".equals(map.get("Action"))) {
-						log.info("【成员离开】："+json);
-
-					}else if("add-member".equals(map.get("Action"))) {
-						log.info("【成员入会】："+json);
-						//添加成员的时候，存储会议数据到数据库
-						Conference conf = new Conference();
-						conf.setUserId(map.get("Caller-Caller-ID-Number"));
-						conf.setConfName(map.get("Conference-Name"));
-						conf.setMemberId(map.get("Member-ID"));
-						conf.setIsVideo(map.get("Video"));
-						conf.setCreateTime(DateUtil.getNowStr());
-						int save = confService.insertConf(conf);
-						if (save != 0) {
-							log.info("conference写入数据库成功");
-						} else {
-							log.info("conference写入数据库失败");
-						}
-
-					}else if("conference-destroy".equals(map.get("Action"))) {
-						log.info("【会议销毁】："+json);
-					}
+//					if("conference-create".equals(map.get("Action"))) {
+//						log.info("【会议创建】："+json);
+//					}else if("del-member".equals(map.get("Action"))) {
+//						log.info("【成员离开】："+json);
+//
+//					}else if("add-member".equals(map.get("Action"))) {
+//						log.info("【成员入会】："+json);
+//						//添加成员的时候，存储会议数据到数据库
+//						Conference conf = new Conference();
+//						conf.setUserId(map.get("Caller-Caller-ID-Number"));
+//						conf.setConfName(map.get("Conference-Name"));
+//						conf.setMemberId(map.get("Member-ID"));
+//						conf.setIsVideo(map.get("Video"));
+//						conf.setCreateTime(DateUtil.getNowStr());
+//						int save = confService.insertConf(conf);
+//						if (save != 0) {
+//							log.info("conference写入数据库成功");
+//						} else {
+//							log.info("conference写入数据库失败");
+//						}
+//
+//					}else if("conference-destroy".equals(map.get("Action"))) {
+//						log.info("【会议销毁】："+json);
+//					}
+					log.info("【Custom事件】"+map.get("Event-Subclass"));
 					
 					break;
+					
+				case EventConstant.CALL_DETAIL:
+						log.info("【CALL_DETAIL事件：】"+json);
+					break;
+				case EventConstant.CHANNEL_STATE:
+					log.info("【CHANNEL_STATE事件：】"+json);
+				break;
 
 				default:
 					break;

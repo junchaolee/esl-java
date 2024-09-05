@@ -39,7 +39,12 @@ public class MediaServerConfig {
 	@Autowired
 	ParasServiceImpl parasService;
 	
-
+	String not_found="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+	     +"<document type=\"freeswitch/xml\">\n"
+	     +"   <section name=\"result\">\n"
+	     +"      <result status=\"not found\" />\n"
+	     +"    </section>\n"
+	     +"</document>";
 
 
 	@RequestMapping("/mediaserver")
@@ -53,7 +58,7 @@ public class MediaServerConfig {
 			String user = req.getParameter("user");
 			SipAccount sipAccountEntity = sipAccountService.findByUserId(user);
 			if (sipAccountEntity == null) {
-				return "not found";
+				return not_found;
 			}
 			
 			
@@ -169,7 +174,6 @@ public class MediaServerConfig {
 			            +"   </configuration>\n" 
 			            +"  </section>\n" 
 			            +"</document>\n";
-				//修改switch.conf.xml的rtp端口范围 
 //				String rtpStartPort = parasService.findByName("system.rtp.port.start").getParameterValue();
 //				String rtpEndPort = parasService.findByName("system.rtp.port.end").getParameterValue();
 								  
@@ -183,21 +187,38 @@ public class MediaServerConfig {
 				
 //				ModifyConfig.modifyOneline(switch_path, 149,startPortContent); 
 //				ModifyConfig.modifyOneline(switch_path, 150, endPortContent);
-				 
-				String sofia_path = Thread.currentThread().getContextClassLoader().getResource("sofia.conf.data").getPath();
-				String xml_all = ReadXml.readXMLFile(sofia_path);
 				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				 
+				//2、修改sofia.conf.xml,添加网关配置到external
+				String sourcePath = Thread.currentThread().getContextClassLoader().getResource("sofia2.conf.xml").getPath();
+				String destinationPath = Thread.currentThread().getContextClassLoader().getResource("sofia.conf.xml").getPath();
+				System.out.println("两个路径："+sourcePath+"|"+destinationPath);
+				String insertContent="<gateways>\n"
+						+"      "+gws
+						+"    </gateways>";
+				ModifyConfig.insertContent(sourcePath.substring(1), destinationPath.substring(1), 34, insertContent);
+				String xml_all = ReadXml.readXMLFile(destinationPath);
+				System.out.println(xml_all);
 			    return xml_all;
 				
 			}else {
-				return "nothing";
+				return not_found;
 			}
-			
-			
 			
 		
 		default:
-			return "not found"; 
+			return not_found; 
 
 		}
 

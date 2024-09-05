@@ -40,6 +40,19 @@ public class SipAccountController {
 		}
 	}
 	
+	@RequestMapping("/del")
+	public AlvesJSONResult del(@Validated @RequestBody SipAccount sip) {
+		int del = sipService.delAccount(sip);
+		if (del != 0) {
+			return AlvesJSONResult.ok("删除成功");
+		} else {
+			return AlvesJSONResult.errorMsg("删除失败");
+		}
+		
+	
+	}
+	
+	
 	@RequestMapping("/findAllAccount")
 	public AlvesJSONResult findAllAccount(HttpServletRequest req) {
 		List<SipAccount> all = sipService.findAll();

@@ -19,4 +19,9 @@ public interface SipAccountMapper extends BaseMapper<SipAccount> {
     SipAccount findByUserId(String userid);
     int insertAccount(SipAccount sip);
 	List<SipAccount> findAll();
+	/**
+	 * @param sip
+	 * @return
+	 */
+	int delAccount(SipAccount sip);
 }
