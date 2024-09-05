@@ -38,4 +38,9 @@
 		values(#{userId,jdbcType=VARCHAR},#{password,jdbcType=VARCHAR},#{codec,jdbcType=VARCHAR},#{createTime,jdbcType=VARCHAR})
 	
 	</insert>
+	
+	<delete id="delAccount" parameterType="com.xbstar.esl.domain.SipAccount" >
+		delete from account
+		where userid = #{userId,jdbcType=VARCHAR}
+	</delete>
 </mapper>

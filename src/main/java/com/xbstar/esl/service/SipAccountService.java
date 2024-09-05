@@ -14,5 +14,10 @@ public interface SipAccountService {
 	int insertAccount(SipAccount sip);
 
 	List<SipAccount> findAll();
+
+	/**
+	 * @param sip
+	 */
+	int delAccount(SipAccount sip);
 	
 }
