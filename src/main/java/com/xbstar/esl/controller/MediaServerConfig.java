@@ -174,6 +174,7 @@ public class MediaServerConfig {
 			            +"   </configuration>\n" 
 			            +"  </section>\n" 
 			            +"</document>\n";
+				//1、修改switch.conf.xml的rtp端口范围 
 //				String rtpStartPort = parasService.findByName("system.rtp.port.start").getParameterValue();
 //				String rtpEndPort = parasService.findByName("system.rtp.port.end").getParameterValue();
 								  
@@ -187,22 +188,10 @@ public class MediaServerConfig {
 				
 //				ModifyConfig.modifyOneline(switch_path, 149,startPortContent); 
 //				ModifyConfig.modifyOneline(switch_path, 150, endPortContent);
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
 				 
 				//2、修改sofia.conf.xml,添加网关配置到external
-				String sourcePath = Thread.currentThread().getContextClassLoader().getResource("sofia2.conf.xml").getPath();
-				String destinationPath = Thread.currentThread().getContextClassLoader().getResource("sofia.conf.xml").getPath();
+				String sourcePath = Thread.currentThread().getContextClassLoader().getResource("sofia2.conf.data").getPath();
+				String destinationPath = Thread.currentThread().getContextClassLoader().getResource("sofia.conf.data").getPath();
 				System.out.println("两个路径："+sourcePath+"|"+destinationPath);
 				String insertContent="<gateways>\n"
 						+"      "+gws
@@ -215,7 +204,7 @@ public class MediaServerConfig {
 			}else {
 				return not_found;
 			}
-			
+					
 		
 		default:
 			return not_found; 
