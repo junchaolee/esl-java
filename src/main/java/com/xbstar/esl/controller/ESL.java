@@ -46,7 +46,6 @@ public final class ESL {
 	private static final Logger log = LoggerFactory.getLogger(ESL.class);
 	@Value("${host}")
 	private String host;
-	// 连接101叶总的被acl限制了，只能通过nginx代理18000访问18021
 	@Value("${port}")
 	private int port;
 	@Value("${password}")
@@ -83,6 +82,7 @@ public final class ESL {
 				switch (event_name) {
 				case EventConstant.RECORD_START:
 					String filepath = map.get("Record-File-Path");
+					log.info("【录制文件路径】："+filepath);
 					CallSound callSound = new CallSound();
 					callSound.setCallUuid(call_uuid);
 					callSound.setFilePath(filepath);
@@ -90,8 +90,7 @@ public final class ESL {
 					break;
 
 				case EventConstant.CHANNEL_CREATE:
-					System.out
-							.println("【事件CHANNEL_CREATE】" + " | " + "通道ID：" + channelID + "|" + "【呼叫方向】：" + direction);
+					log.info("【事件CHANNEL_CREATE】" + " | " + "通道ID：" + channelID + "|" + "【呼叫方向】：" + direction);
 					// 没有给180响应，直接给了200 OK,可以在dialplan的park之前加入early-ring
 //					client.sendSyncApiCommand("uuid_answer",channelID);
 					break;
@@ -101,8 +100,7 @@ public final class ESL {
 					 * 1、收到应答ack，开始查找路由桥接被叫 originate会执行拨号计划查找，inline可以不需
 					 * 应该判断来电方向，如果不判断，总是有新的通道产生触发originate命令执行，将陷入死循环
 					 */
-					System.out
-							.println("【事件CHANNEL_ANSWER】" + "| " + "【通道ID】：" + channelID + "|" + "【呼叫方向】：" + direction);
+					log.info("【事件CHANNEL_ANSWER】" + "| " + "【通道ID】：" + channelID + "|" + "【呼叫方向】：" + direction);
 					String cmdstr = "{absolute_codec_string=^^:PCMA:PCMU,origination_caller_id_number="
 							+ caller_id_number + "}user/" + destination_number + " inline";
 
@@ -119,7 +117,7 @@ public final class ESL {
 					}
 					String alegID = legMap.get("a-leg-channelID");
 					String blegID = legMap.get("b-leg-channelID");
-					System.out.println("【A-legID】：" + alegID + "| " + "【B-legID】：" + blegID);
+					log.info("【A-legID】：" + alegID + "| " + "【B-legID】：" + blegID);
 					String cmdstr2 = alegID + " " + blegID;
 //					if (StringUtils.isNotEmpty(alegID) && StringUtils.isNoneEmpty(blegID)) {
 //						client.sendAsyncApiCommand("uuid_bridge", cmdstr2);
@@ -143,7 +141,7 @@ public final class ESL {
 					record.setStartStamp(startTime);
 					record.setAnswerStamp(answerTime);
 					callRecordService.insert(record);
-					System.out.println("【事件：CHANNEL_BRIDGE】");
+					log.info("【事件：CHANNEL_BRIDGE】");
 					break;
 				case EventConstant.CHANNEL_HANGUP_COMPLETE:
 					String hangupCause = map.get("variable_hangup_cause");

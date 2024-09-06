@@ -24,8 +24,8 @@ import com.xbstar.esl.util.ReadXml;
  * @Version:1.0.0
  */
 @RestController
-@RequestMapping("/api2")
-public class MediaServerConfig {
+@RequestMapping("/api")
+public class MediaServer {
 	
 	@Value("${SIP_DOMAIN}")
 	private String sip_domain;
@@ -49,23 +49,18 @@ public class MediaServerConfig {
 
 	@RequestMapping("/mediaserver")
 	public String mediaserverConfig(HttpServletRequest req) {
-		// 根据参数数据判断数据库中是否有此数据
-		// 【有】 生成xml数据
-		// 【没有】 返回not found -> 注册失败
 		String section = req.getParameter("section");
-		switch (section) {
-		case "directory":
+		
+		//1、用户注册
+		if("directory".equals(section)) {
 			String user = req.getParameter("user");
 			SipAccount sipAccountEntity = sipAccountService.findByUserId(user);
 			if (sipAccountEntity == null) {
 				return not_found;
 			}
 			
-			
-
 			// 1、配置用户默认的user_context=defualt
-			String xml_reg = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
-					+ "<document type=\"freeswitch/xml\">\n" + "  <section name=\"directory\">\n"
+			String xml_reg = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" + "<document type=\"freeswitch/xml\">\n" + "  <section name=\"directory\">\n"
 					+ "    <domain name=\"" + sip_domain + "\">\n" + "      <user id=\"" + sipAccountEntity.getUserId()
 					+ "\">\n" + "        <params>\n" + "          <param name=\"password\" value=\""
 					+ sipAccountEntity.getPassword() + "\"/>\n"
@@ -76,20 +71,22 @@ public class MediaServerConfig {
 					+ "          <variable name=\"accountcode\" value=\"" + sipAccountEntity.getUserId() + "\"/>\n"
 					+ "          <variable name=\"effective_caller_id_name\" value=\""
 					+ sipAccountEntity.getUserId() + "\"/>\n"
-					+ "          <variable name=\"effective_caller_id_number\" value=\"" + sipAccountEntity.getUserId()
+				    + "          <variable name=\"effective_caller_id_number\" value=\"" + sipAccountEntity.getUserId()
 					+ "\"/>\n" + "          <variable name=\"callgroup\" value=\"techsupport\"/>\n"
-					+ "        </variables>\n" + "      </user>\n" + "    </domain>\n" + "  </section>\n"
+			    	+ "        </variables>\n" + "      </user>\n" + "    </domain>\n" + "  </section>\n"
 					+ "</document>";
 			//System.out.println("【注册用户信息】-"+"sip_profile:"+req.getParameter("sip_profile")+" | 【action】:"+req.getParameter("action"));
 			return xml_reg;
-			
-		case "dialplan":
+		}
+		
+		//2、拨号计划		
+		if("dialplan".equals(section)) {
 			
 			String called = req.getParameter("Caller-Destination-Number");
 			//String domain_name = req.getParameter("variable_domain_name");
 			String cxt = req.getParameter("Caller-Context");
 			
-			// 方法1、配置context 为：default|public
+			// 方法一、配置context 为：default|public
 			// 桥接等待5秒 +"          <action application=\"sleep\"  data=\"5000\" />\n"
 			String xml_default= "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
 					+"<document type=\"freeswitch/xml\">\n"
@@ -121,7 +118,7 @@ public class MediaServerConfig {
 					+"  </section>\n"
 					+"</document>";
 			
-			// 方法2、对所有呼入做park处理，交由esl处理
+			// 方法二、对所有呼入做park处理，交由esl处理
 			// park 之前加上180振铃 <action application="ring_ready"/>
 			String xml_park = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
 					+"<document type=\"freeswitch/xml\">\n"
@@ -140,43 +137,52 @@ public class MediaServerConfig {
 			
 			System.out.println("【路由信息】-被叫:"+called+" | "+"主叫context: "+cxt+" | "+"domian:"+sip_domain);
 			return xml_default;
-			
-		case "configuration":
-			//&&"external".equals(req.getParameter("profile"))
-			
-			if("sofia.conf".equals(req.getParameter("key_value"))) {
+		}
+
+		
+		
+		//3、配置
+		if("configuration".equals(section)) {
+			switch(req.getParameter("key_value")) {
+			case "sofia.conf":
+//				if("config_sofia".equals(req.getParameter("Event-Calling-Function"))) {
+//				}
 				String gws="";
 				List<SipGateway> gwList = sipGatewayService.findAll();
 				for(SipGateway sg:gwList) {
 					String gwname = sg.getGwName();
 					String gwip = sg.getGwIP();
 					gws+="<gateway name=\""+gwname+"\">\n"
-					       +"   <param name=\"proxy\" value=\""+gwip+"\" />\n"
-					       +" 	<param name=\"realm\" value=\""+gwip+"\" />\n"
-					       +" 	<param name=\"register\" value=\"false\" />\n"
-					       +" 	<param name=\"rtp-autofix-timing\" value=\"false\" />\n"
-					       +" 	<param name=\"caller-id-in-from\" value=\"true\" />\n"
-					       +" 	<param name=\"register-transport\" value=\"udp\" />\n"
-					       +"</gateway>\n";
+							+"   <param name=\"proxy\" value=\""+gwip+"\" />\n"
+							+" 	<param name=\"realm\" value=\""+gwip+"\" />\n"
+							+" 	<param name=\"register\" value=\"false\" />\n"
+							+" 	<param name=\"rtp-autofix-timing\" value=\"false\" />\n"
+							+" 	<param name=\"caller-id-in-from\" value=\"true\" />\n"
+							+" 	<param name=\"register-transport\" value=\"udp\" />\n"
+							+"</gateway>\n";
 				}
+				//System.out.println("网关信息:"+gw);
 				String xml_gw= "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
-			            +"<document type=\"freeswitch/xml\">\n"
-			            +"  <section name=\"configuration\" description=\"Various Configuration\">\n" 
-			            +"    <configuration name=\"sofia.conf\" description=\"sofia Endpoint\">\n"
-			            +"      <profiles>\n"
-			            +"         <profile name=\"external\">\n"
-			            +"            <gateways>\n" 
-			            +               gws
-			            +"           </gateways>\n" 
-			            +"         </profile>\n" 
-			            +"     </profiles>\n" 
-			            +"   </configuration>\n" 
-			            +"  </section>\n" 
-			            +"</document>\n";
+						+"<document type=\"freeswitch/xml\">\n"
+						+"  <section name=\"configuration\" description=\"Various Configuration\">\n" 
+						+"    <configuration name=\"sofia.conf\" description=\"sofia Endpoint\">\n"
+						+"      <profiles>\n"
+						+"         <profile name=\"external\">\n"
+						+"            <gateways>\n" 
+						+               gws
+						+"           </gateways>\n" 
+						+"         </profile>\n" 
+						+"     </profiles>\n" 
+						+"   </configuration>\n" 
+						+"  </section>\n" 
+						+"</document>\n";
+				
+				
+				
 				//1、修改switch.conf.xml的rtp端口范围 
 //				String rtpStartPort = parasService.findByName("system.rtp.port.start").getParameterValue();
 //				String rtpEndPort = parasService.findByName("system.rtp.port.end").getParameterValue();
-								  
+				
 //				System.out.println("【rtp开始端口】："+rtpStartPort);
 //				System.out.println("【rtp结束端口】："+rtpEndPort);
 //				String startPortContent="    <param name=\"rtp-start-port\" value=\""+rtpStartPort+"\"/>";
@@ -187,30 +193,29 @@ public class MediaServerConfig {
 				
 //				ModifyConfig.modifyOneline(switch_path, 149,startPortContent); 
 //				ModifyConfig.modifyOneline(switch_path, 150, endPortContent);
-				 
+				
 				//2、修改sofia.conf.xml,添加网关配置到external
-				String sourcePath = Thread.currentThread().getContextClassLoader().getResource("sofia2.conf.data").getPath();
-				String destinationPath = Thread.currentThread().getContextClassLoader().getResource("sofia.conf.data").getPath();
+				String sourcePath = Thread.currentThread().getContextClassLoader().getResource("sofia2.conf.xml").getPath();
+				String destinationPath = Thread.currentThread().getContextClassLoader().getResource("sofia.conf.xml").getPath();
 				System.out.println("两个路径："+sourcePath+"|"+destinationPath);
 				String insertContent="<gateways>\n"
 						+"      "+gws
-						+"    </gateways>";
+						+"</gateways>";
 				ModifyConfig.insertContent(sourcePath.substring(1), destinationPath.substring(1), 34, insertContent);
 				String xml_all = ReadXml.readXMLFile(destinationPath);
-				System.out.println(xml_all);
-			    return xml_all;
-				
-			}else  {
+//				System.out.println(xml_all);
+				return xml_all;
+			
+			default:
 				return not_found;
 			}
-					
-		
-		default:
-			return not_found; 
-
+			
+		}else {
+			
+			return not_found;
 		}
-
-
+		
+			
 	}
 
 	
