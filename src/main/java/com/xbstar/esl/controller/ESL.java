@@ -93,6 +93,8 @@ public final class ESL {
 					log.info("【事件CHANNEL_CREATE】" + " | " + "通道ID：" + channelID + "|" + "【呼叫方向】：" + direction);
 					// 没有给180响应，直接给了200 OK,可以在dialplan的park之前加入early-ring
 //					client.sendSyncApiCommand("uuid_answer",channelID);
+					// 设置通道变量给A-leg
+					client.sendSyncApiCommand("uuid_setvar",channelID+" Ext_type 2");
 					break;
 
 				case EventConstant.CHANNEL_ANSWER:
@@ -163,31 +165,31 @@ public final class ESL {
 					legMap.remove("b-leg-channelID");
 					break;
 				case EventConstant.CUSTOM:
-//					if("conference-create".equals(map.get("Action"))) {
-//						log.info("【会议创建】："+json);
-//					}else if("del-member".equals(map.get("Action"))) {
-//						log.info("【成员离开】："+json);
-//
-//					}else if("add-member".equals(map.get("Action"))) {
-//						log.info("【成员入会】："+json);
-//						//添加成员的时候，存储会议数据到数据库
-//						Conference conf = new Conference();
-//						conf.setUserId(map.get("Caller-Caller-ID-Number"));
-//						conf.setConfName(map.get("Conference-Name"));
-//						conf.setMemberId(map.get("Member-ID"));
-//						conf.setIsVideo(map.get("Video"));
-//						conf.setCreateTime(DateUtil.getNowStr());
-//						int save = confService.insertConf(conf);
-//						if (save != 0) {
-//							log.info("conference写入数据库成功");
-//						} else {
-//							log.info("conference写入数据库失败");
-//						}
-//
-//					}else if("conference-destroy".equals(map.get("Action"))) {
-//						log.info("【会议销毁】："+json);
-//					}
-					log.info("【Custom事件】"+map.get("Event-Subclass"));
+					if("conference-create".equals(map.get("Action"))) {
+						log.info("【会议创建】："+json);
+					}else if("del-member".equals(map.get("Action"))) {
+						log.info("【成员离开】："+json);
+
+					}else if("add-member".equals(map.get("Action"))) {
+						log.info("【成员入会】："+json);
+						//添加成员的时候，存储会议数据到数据库
+						Conference conf = new Conference();
+						conf.setUserId(map.get("Caller-Caller-ID-Number"));
+						conf.setConfName(map.get("Conference-Name"));
+						conf.setMemberId(map.get("Member-ID"));
+						conf.setIsVideo(map.get("Video"));
+						conf.setCreateTime(DateUtil.getNowStr());
+						int save = confService.insertConf(conf);
+						if (save != 0) {
+							log.info("conference写入数据库成功");
+						} else {
+							log.info("conference写入数据库失败");
+						}
+
+					}else if("conference-destroy".equals(map.get("Action"))) {
+						log.info("【会议销毁】："+json);
+					}
+					//log.info("【Custom事件】"+map.get("Event-Subclass"));
 					
 					break;
 					
