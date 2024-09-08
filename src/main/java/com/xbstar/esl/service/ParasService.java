@@ -13,6 +13,6 @@ import com.xbstar.esl.domain.ParasInfo;
  */
 public interface ParasService {
 	
-	ParasInfo findByName(String name);
+	String findByName(String name);
 
 }

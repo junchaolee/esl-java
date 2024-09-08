@@ -1,6 +1,10 @@
 package com.xbstar.esl.controller;
+import java.io.IOException;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
+
+import org.dom4j.Document;
+import org.dom4j.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +18,7 @@ import com.xbstar.esl.service.impl.SipAccountServiceImpl;
 import com.xbstar.esl.service.impl.SipGatewayServiceImpl;
 import com.xbstar.esl.util.ModifyConfig;
 import com.xbstar.esl.util.ReadXml;
+import com.xbstar.esl.util.XMLUtilLjc;
 
 
 /**
@@ -143,10 +148,57 @@ public class MediaServer {
 		
 		//3、配置
 		if("configuration".equals(section)) {
+			//1、修改switch.conf.xml的rtp端口范围 
+			String rtpStartPort = parasService.findByName("system.rtp.port.start");
+			String rtpEndPort = parasService.findByName("system.rtp.port.end");
+			
+			System.out.println("【rtp开始端口】："+rtpStartPort);
+			System.out.println("【rtp结束端口】："+rtpEndPort);
+//			String startPortContent="    <param name=\"rtp-start-port\" value=\""+rtpStartPort+"\"/>";
+//			String endPortContent="    <param name=\"rtp-end-port\" value=\""+rtpEndPort+"\"/>";
+			
+//			/opt/etc/freeswitch/autoload_configs/switch.conf.xml
+			String switch_path = Thread.currentThread().getContextClassLoader().getResource("switch.conf.data").getPath();
+			
+//			ModifyConfig.modifyOneline(switch_path.substring(1), 149,startPortContent); 
+//			ModifyConfig.modifyOneline(switch_path.substring(1), 150, endPortContent);
+			
+			
+			
+//			String switch_path ="src/main/resources/switch.conf.data";
+			
+			Document doc = XMLUtilLjc.getDocument(switch_path); 
+			Element rootElement =doc.getRootElement(); 
+			List<Element> childElements = rootElement.elements();
+			for(Element child : childElements) { 
+			    if("Settings".equals(child.getName())) {
+					  List<Element> zzElements = child.elements(); 
+					  for(Element zz : zzElements) {
+						  System.out.println("【子2元素及属性name为】:"+zz.getName()+"|"+zz.attributeValue("name")+"|"+zz.attributeValue("value"));
+						  if("rtp-start-port".equals(zz.attributeValue("name"))) {
+							  zz.attribute("value").setValue(rtpStartPort);
+					      }
+						  if("rtp-end-port".equals(zz.attributeValue("name"))) {
+							  zz.attribute("value").setValue(rtpEndPort);
+						  }
+					  }
+				  }
+			} 
+			try {
+				XMLUtilLjc.writeXml(doc, switch_path);
+			} catch (IOException e) {
+				e.printStackTrace();
+			} 
+		
+			 
+			
+			
+			
+			
 			switch(req.getParameter("key_value")) {
 			case "sofia.conf":
-//				if("config_sofia".equals(req.getParameter("Event-Calling-Function"))) {
-//				}
+				//if("config_sofia".equals(req.getParameter("Event-Calling-Function"))) {
+				//}
 				String gws="";
 				List<SipGateway> gwList = sipGatewayService.findAll();
 				for(SipGateway sg:gwList) {
@@ -179,31 +231,18 @@ public class MediaServer {
 				
 				
 				
-				//1、修改switch.conf.xml的rtp端口范围 
-//				String rtpStartPort = parasService.findByName("system.rtp.port.start").getParameterValue();
-//				String rtpEndPort = parasService.findByName("system.rtp.port.end").getParameterValue();
-				
-//				System.out.println("【rtp开始端口】："+rtpStartPort);
-//				System.out.println("【rtp结束端口】："+rtpEndPort);
-//				String startPortContent="    <param name=\"rtp-start-port\" value=\""+rtpStartPort+"\"/>";
-//				String endPortContent="    <param name=\"rtp-end-port\" value=\""+rtpEndPort+"\"/>";
-				
-//				/opt/etc/freeswitch/autoload_configs/switch.conf.xml
-//				String switch_path = Thread.currentThread().getContextClassLoader().getResource("switch.conf.data").getPath();
-				
-//				ModifyConfig.modifyOneline(switch_path, 149,startPortContent); 
-//				ModifyConfig.modifyOneline(switch_path, 150, endPortContent);
+
 				
 				//2、修改sofia.conf.xml,添加网关配置到external
-				String sourcePath = Thread.currentThread().getContextClassLoader().getResource("sofia2.conf.xml").getPath();
-				String destinationPath = Thread.currentThread().getContextClassLoader().getResource("sofia.conf.xml").getPath();
+				String sourcePath = Thread.currentThread().getContextClassLoader().getResource("sofia2.conf.data").getPath();
+				String destinationPath = Thread.currentThread().getContextClassLoader().getResource("sofia.conf.data").getPath();
 				System.out.println("两个路径："+sourcePath+"|"+destinationPath);
 				String insertContent="<gateways>\n"
 						+"      "+gws
 						+"</gateways>";
 				ModifyConfig.insertContent(sourcePath.substring(1), destinationPath.substring(1), 34, insertContent);
 				String xml_all = ReadXml.readXMLFile(destinationPath);
-//				System.out.println(xml_all);
+				//System.out.println(xml_all);
 				return xml_all;
 			
 			default:

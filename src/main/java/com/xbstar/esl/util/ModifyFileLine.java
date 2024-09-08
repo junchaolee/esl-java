@@ -1,16 +1,13 @@
 package com.xbstar.esl.util;
 
 import java.io.*;
-import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
-
-import com.xbstar.esl.controller.MediaServerConfig;
 
 public class ModifyFileLine {
 	public static void main(String[] args) {
 		// 指定要修改的文件路径
-		String filePath = "C:\\Users\\tong\\Desktop\\switch.conf.xml";
+		String filePath = "C:\\Users\\janus\\Desktop\\switch.conf.xml";
 		// 读取文件内容
 		List<String> lines = new ArrayList<>();
 		try (BufferedReader reader = Files.newBufferedReader(Paths.get(filePath))) {
@@ -23,8 +20,8 @@ public class ModifyFileLine {
 		}
 		// 修改第三行的内容
 		int lineNumberToModify = 131; // 第三行的索引为2
-		String startPortContent = "    <param name=\"rtp-start-port\" value=\"40000\"/>";
-		String endPortContent = "    <param name=\"rtp-end-port\" value=\"42100\"/>";
+		String startPortContent = "    <param name=\"rtp-start-port\" value=\"15000\"/>";
+		String endPortContent = "    <param name=\"rtp-end-port\" value=\"12100\"/>";
 		lines.set(lineNumberToModify, startPortContent);
 		lines.set(132, endPortContent);
 		

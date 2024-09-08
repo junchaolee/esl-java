@@ -16,12 +16,18 @@
 			parameter_name,parameter_value,create_time
 	</sql>
 	
-	<select id="findByName" parameterType="String"
-		resultMap="BaseResultMap2">
+	<select id="findByName" parameterType="com.xbstar.esl.domain.ParasInfo"
+		resultType="String">
 		select
-		<include refid="Base_Column_List2" />
+		parameter_value
 		from parameters_info
 		where parameter_name = #{parameterName,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="queryValueByName" parameterType="com.xbstar.esl.domain.ParasInfo">
+		select parameter_value from parameters_info
+		where parameter_name=#{parameterName,jdbcType=VARCHAR}
+	
 	</select>
 	
 	<select id="findAll" parameterType="String"

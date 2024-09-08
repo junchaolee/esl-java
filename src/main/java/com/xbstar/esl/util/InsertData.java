@@ -7,7 +7,7 @@ import java.util.*;
 
 import com.xbstar.esl.controller.MediaServerConfig;
 
-public class ModifyData {
+public class InsertData {
 	public static void main(String[] args) {
 		// 指定要修改的文件路径
 		String sourcefilePath = Thread.currentThread().getContextClassLoader().getResource("sofia2.conf.data").getPath().substring(1);
@@ -54,7 +54,7 @@ public class ModifyData {
 		}
 		
 		
-		String abc = ModifyData.class.getClassLoader().getResource("sofia.conf.data").getPath().substring(1);
+		String abc = InsertData.class.getClassLoader().getResource("sofia.conf.data").getPath().substring(1);
 		System.out.println(abc);
 	}
 	

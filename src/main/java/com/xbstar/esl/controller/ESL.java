@@ -77,7 +77,8 @@ public final class ESL {
 				String destination_number = map.get("Caller-Destination-Number");
 				String channelID = map.get("Unique-ID");
 				String direction = map.get("Call-Direction");
-				JSONObject json = JSONObject.parseObject(JSON.toJSONString(map));
+				JSONObject paramsJson = JSONObject.parseObject(JSON.toJSONString(map));
+
 
 				switch (event_name) {
 				case EventConstant.RECORD_START:
@@ -91,40 +92,43 @@ public final class ESL {
 
 				case EventConstant.CHANNEL_CREATE:
 					log.info("【事件CHANNEL_CREATE】" + " | " + "通道ID：" + channelID + "|" + "【呼叫方向】：" + direction);
-					// 没有给180响应，直接给了200 OK,可以在dialplan的park之前加入early-ring
-//					client.sendSyncApiCommand("uuid_answer",channelID);
-					// 设置通道变量给A-leg
-					client.sendSyncApiCommand("uuid_setvar",channelID+" Ext_type 2");
+					//1、程序控制sip交互响应直接给了200 OK,可以在dialplan的park之前加入early-ring给出180响应
+					//client.sendSyncApiCommand("uuid_answer",channelID);
+					//2、设置通道变量
+					//client.sendAsyncApiCommand("uuid_setvar",channelID+" Ext_type 2");
+					String cmd1=String.format("uuid_setvar %s %s %s", channelID, "Ext_type","2");
+					client.sendAsyncApiCommand("cmd1", "");
 					break;
 
 				case EventConstant.CHANNEL_ANSWER:
 					/*
+					 * == 程序控制 B-leg ==
 					 * 1、收到应答ack，开始查找路由桥接被叫 originate会执行拨号计划查找，inline可以不需
 					 * 应该判断来电方向，如果不判断，总是有新的通道产生触发originate命令执行，将陷入死循环
 					 */
-					log.info("【事件CHANNEL_ANSWER】" + "| " + "【通道ID】：" + channelID + "|" + "【呼叫方向】：" + direction);
-					String cmdstr = "{absolute_codec_string=^^:PCMA:PCMU,origination_caller_id_number="
-							+ caller_id_number + "}user/" + destination_number + " inline";
+					//log.info("【事件CHANNEL_ANSWER】" + "| " + "【通道ID】：" + channelID + "|" + "【呼叫方向】：" + direction);
+					//String cmdstr = "{absolute_codec_string=^^:PCMA:PCMU,origination_caller_id_number="
+					//		+ caller_id_number + "}user/" + destination_number + " inline";
 
-//					if ("inbound".equals(direction)) {
-//						String result = client.sendAsyncApiCommand("originate", cmdstr);
-//						System.out.println("【originate命令执行结果】：" + result.toString());
-//					}
+					//if ("inbound".equals(direction)) {
+					//	String result = client.sendAsyncApiCommand("originate", cmdstr);
+					//	System.out.println("【originate命令执行结果】：" + result.toString());
+					//}
 
 					/* 2、开始执行uuid-bridge，将aleg、bleg连起来 */
-					if ("inbound".equals(direction)) {
-						legMap.put("a-leg-channelID", channelID);
-					} else if ("outbound".equals(direction)) {
-						legMap.put("b-leg-channelID", channelID);
-					}
-					String alegID = legMap.get("a-leg-channelID");
-					String blegID = legMap.get("b-leg-channelID");
-					log.info("【A-legID】：" + alegID + "| " + "【B-legID】：" + blegID);
-					String cmdstr2 = alegID + " " + blegID;
-//					if (StringUtils.isNotEmpty(alegID) && StringUtils.isNoneEmpty(blegID)) {
-//						client.sendAsyncApiCommand("uuid_bridge", cmdstr2);
-//						System.out.println("【uuid_bridge执行的参数】：" + cmdstr2);
-//					}
+					//if ("inbound".equals(direction)) {
+					//	legMap.put("a-leg-channelID", channelID);
+					//} else if ("outbound".equals(direction)) {
+					//	legMap.put("b-leg-channelID", channelID);
+					//}
+					//String alegID = legMap.get("a-leg-channelID");
+					//String blegID = legMap.get("b-leg-channelID");
+					//log.info("【A-legID】：" + alegID + "| " + "【B-legID】：" + blegID);
+					//String cmdstr2 = alegID + " " + blegID;
+					//if (StringUtils.isNotEmpty(alegID) && StringUtils.isNoneEmpty(blegID)) {
+					//	client.sendAsyncApiCommand("uuid_bridge", cmdstr2);
+					//	System.out.println("【uuid_bridge执行的参数】：" + cmdstr2);
+					//}
 					break;
 
 				case EventConstant.RECORD_STOP:
@@ -160,19 +164,20 @@ public final class ESL {
 					callRecord.setBillsec(billsec);
 					callRecord.setHangupCause(hangupCause);
 					callRecordService.update(callRecord);
-					System.out.println("【事件：CHANNEL_HANGUP_COMPLETE】");
 					legMap.remove("a-leg-channelID");
 					legMap.remove("b-leg-channelID");
+					System.out.println("【事件：CHANNEL_HANGUP_COMPLETE】");
 					break;
 				case EventConstant.CUSTOM:
+					/* 1、处理会议相关 */
 					if("conference-create".equals(map.get("Action"))) {
-						log.info("【会议创建】："+json);
+						log.info("【会议"+map.get("Conference-Name")+"创建】,"+"会议profile："+map.get("Conference-Profile-Name"));
 					}else if("del-member".equals(map.get("Action"))) {
-						log.info("【成员离开】："+json);
+						log.info("【成员"+map.get("Caller-Destination-Number")+"离开会议!!!】：");
 
 					}else if("add-member".equals(map.get("Action"))) {
-						log.info("【成员入会】："+json);
-						//添加成员的时候，存储会议数据到数据库
+						log.info("【成员"+map.get("Caller-Destination-Number")+"进入会议,信息入库!!!】");
+						//添加成员的时候，存储成员数据到数据库
 						Conference conf = new Conference();
 						conf.setUserId(map.get("Caller-Caller-ID-Number"));
 						conf.setConfName(map.get("Conference-Name"));
@@ -181,23 +186,23 @@ public final class ESL {
 						conf.setCreateTime(DateUtil.getNowStr());
 						int save = confService.insertConf(conf);
 						if (save != 0) {
-							log.info("conference写入数据库成功");
+							log.info("MemberID写入数据库成功");
 						} else {
-							log.info("conference写入数据库失败");
+							log.info("MemberID写入数据库失败");
 						}
 
 					}else if("conference-destroy".equals(map.get("Action"))) {
-						log.info("【会议销毁】："+json);
+						log.info("【会议"+map.get("Conference-Name")+"销毁】："+paramsJson);
 					}
 					//log.info("【Custom事件】"+map.get("Event-Subclass"));
 					
 					break;
 					
 				case EventConstant.CALL_DETAIL:
-						log.info("【CALL_DETAIL事件：】"+json);
+						log.info("【CALL_DETAIL事件：】"+paramsJson);
 					break;
 				case EventConstant.CHANNEL_STATE:
-					log.info("【CHANNEL_STATE事件：】"+json);
+					log.info("【CHANNEL_STATE事件：】"+paramsJson);
 				break;
 
 				default:

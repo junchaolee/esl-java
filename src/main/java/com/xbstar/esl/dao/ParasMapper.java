@@ -21,6 +21,8 @@ public interface ParasMapper extends BaseMapper<ParasInfo> {
 	 * @param name
 	 * @return
 	 */
-	ParasInfo findByName(String name);
+	String queryValueByName(String name);
+	
+	String findByName(String name);
 
 }

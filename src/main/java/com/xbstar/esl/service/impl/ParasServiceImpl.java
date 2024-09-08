@@ -27,14 +27,12 @@ public class ParasServiceImpl extends BaseServiceImpl<ParasInfo> implements Para
 	
 
 	@Override
-	public ParasInfo findByName(String name) {
-		// TODO Auto-generated method stub
+	public String findByName(String name) {
 		return parasMapper.findByName(name);
 	}
 
 	@Override
 	public BaseMapper<ParasInfo> getMapper() {
-		// TODO Auto-generated method stub
 		return this.parasMapper;
 	}
 

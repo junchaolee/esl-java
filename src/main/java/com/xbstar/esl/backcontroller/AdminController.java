@@ -12,5 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/admin")
 @RestController
 public class AdminController {
-
+	
+	
+	public String index() {
+		
+		return "index.html";
+	}
+	
 }
