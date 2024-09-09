@@ -199,10 +199,10 @@ public final class ESL {
 					break;
 					
 				case EventConstant.CALL_DETAIL:
-						log.info("【CALL_DETAIL事件：】"+paramsJson);
+//						log.info("【CALL_DETAIL事件：】"+paramsJson);
 					break;
 				case EventConstant.CHANNEL_STATE:
-					log.info("【CHANNEL_STATE事件：】"+paramsJson);
+//					log.info("【CHANNEL_STATE事件：】"+paramsJson);
 				break;
 
 				default:

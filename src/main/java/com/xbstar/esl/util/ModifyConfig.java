@@ -63,5 +63,32 @@ public class ModifyConfig {
 		}
 
 	}
+	
+	public static void insertContent(InputStream is,String destinationPath, int position, String content) {
+		List<String> lines = new ArrayList<>();
+		
+		
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+			String line;
+			while ((line = reader.readLine()) != null) {
+				lines.add(line);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+//		new BufferedWriter(new OutputStreamWriter(os))
+		// 在第N行添加内容
+		lines.add(position, content);
+		try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(destinationPath))) {
+			for (String line : lines) {
+				writer.write(line);
+				writer.newLine(); // 写入换行符
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
 
 }
