@@ -6,6 +6,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -35,6 +37,7 @@ import com.xbstar.esl.util.XMLUtilLjc;
 @RestController
 @RequestMapping("/api")
 public class MediaServer {
+	private static final Logger log = LoggerFactory.getLogger(MediaServer.class);
 	
 	@Value("${SIP_DOMAIN}")
 	private String sip_domain;
@@ -115,7 +118,12 @@ public class MediaServer {
 					+"      <extension name=\"Local_Dial\">\n"
 					+"        <condition field=\"destination_number\" expression=\"^([0-9]{5,6})$\">\n"
 					+"          <action application=\"export\" data=\"dialed_extension=$1\"/>\n"
-					+"          <action application=\"bridge\""+" data=\"{absolute_codec_string=PCMA\\,OPUS\\,PCMU}user/"+called+"@"+sip_domain+"\"/>\n"
+					+"          <action application=\"sleep\" data=\"500\"/>\n"
+					+"          <action application=\"set\" data=\"recordfile=record_${strftime(%Y-%m-%d-%H-%M-%S)}_${destination_number}_${caller_id_number}.wav\" />\n"
+					+"          <action application=\"set\" data=\"recordfile_path=${Call_record_path}/record/${recordfile}\" />\n"
+					+"          <action application=\"log\"  data=\"Call_record_path:${Call_record_path}\"    />\n"
+					+"          <action application=\"set\" data=\"execute_on_answer=record_session ${recordfile_path}\" />\n"
+					+"          <action application=\"bridge\""+" data=\"{absolute_codec_string=PCMA\\,OPUS\\,PCMU}{originatioin_caller_id_number=7777}user/"+called+"@"+sip_domain+"\"/>\n"
 					+"        </condition>\n"
 					+"      </extension>\n"
 					+"      <extension name=\"2FXO\">\n"
@@ -128,24 +136,7 @@ public class MediaServer {
 					+"  </section>\n"
 					+"</document>";
 			
-			// 方法二、对所有呼入做park处理，交由esl处理
-			// park 之前加上180振铃 <action application="ring_ready"/>
-			String xml_park = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
-					+"<document type=\"freeswitch/xml\">\n"
-					+"  <section name=\"dialplan\" description=\"RE Dial Plan For FreeSwitch\">\n"
-					+"    <context name=\"default\">\n"
-					+"      <extension name=\"test2\">\n"
-					+"        <condition field=\"destination_number\" expression=\"^(.+)$\">\n"
-					+"          <action application=\"export\" data=\"dialed_extension=$1\"/>\n"
-					+"          <action application=\"ring_ready\"/>\n"
-					+"          <action application=\"park\"/>\n"
-					+"        </condition>\n"
-					+"      </extension>\n"
-					+"    </context>\n"
-					+"  </section>\n"
-					+"</document>";
-			
-			System.out.println("【路由信息】-被叫:"+called+" | "+"主叫context: "+cxt+" | "+"domian:"+sip_domain);
+			log.info("【路由信息】-被叫:"+called+" | "+"主叫context: "+cxt+" | "+"domian:"+sip_domain);
 			return xml_default;
 		}
 
@@ -203,10 +194,10 @@ public class MediaServer {
 				try {
 					is = resourceLoader.getResource("classpath:sofia2.conf.data").getInputStream();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				String destinationPath="/tmp/sofia.conf.data";
+//				String destinationPath="/tmp/sofia.conf.data";
+				String destinationPath="C:\\Users\\tong\\Desktop\\sofia.data";
 				
 //				ClassPathResource classPathResource = new ClassPathResource("sofia2.conf.data");
 			
@@ -220,7 +211,7 @@ public class MediaServer {
 //				ModifyConfig.insertContent(sourcePath.substring(1), destinationPath.substring(1), 34, insertContent);
 				ModifyConfig.insertContent(is, destinationPath, 34, insertContent);
 				String xml_all = ReadXml.readXMLFile(destinationPath);
-				//System.out.println(xml_all);
+				//log.info(xml_all);
 				return xml_all;
 			
 			default:

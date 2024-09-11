@@ -1,8 +1,13 @@
 package com.xbstar.esl.filter;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.xbstar.esl.controller.ESL;
  
 /**
  * @Description: 打印请求参数的过滤器
@@ -12,6 +17,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @Version:1.0.0
  */
 public class RequestLoggingFilter implements Filter {
+	private static final Logger log = LoggerFactory.getLogger(RequestLoggingFilter.class);
+
  
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws IOException, ServletException {
@@ -32,7 +39,7 @@ public class RequestLoggingFilter implements Filter {
             //System.out.println("【DIRECTORY请求参数】:"+writeValueAsString);
 
         }else if("configuration".equals(sec)) {
-        	System.out.println("【CONFIGURATION请求参数】:"+writeValueAsString);
+        	log.info("【CONFIGURATION请求参数】:"+writeValueAsString);
         }
   
  

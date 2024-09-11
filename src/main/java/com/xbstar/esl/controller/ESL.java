@@ -12,10 +12,14 @@ import com.xbstar.esl.service.impl.CallSoundServiceImpl;
 import com.xbstar.esl.util.AlvesJSONResult;
 import com.xbstar.esl.util.DateUtil;
 import com.xbstar.esl.util.EventConstant;
-import org.freeswitch.esl.client.IEslEventListener;
-import org.freeswitch.esl.client.inbound.Client;
-import org.freeswitch.esl.client.inbound.InboundConnectionFailure;
-import org.freeswitch.esl.client.transport.event.EslEvent;
+
+import link.thingscloud.freeswitch.esl.IEslEventListener;
+import link.thingscloud.freeswitch.esl.InboundClient;
+import link.thingscloud.freeswitch.esl.ServerConnectionListener;
+import link.thingscloud.freeswitch.esl.inbound.option.InboundClientOption;
+import link.thingscloud.freeswitch.esl.inbound.option.ServerOption;
+import link.thingscloud.freeswitch.esl.transport.event.EslEvent;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,13 +41,13 @@ import java.util.Map;
  */
 @RestController
 public final class ESL {
+	private static final Logger log = LoggerFactory.getLogger(ESL.class);
 	@Autowired
 	ConferenceService confService;
 	@Autowired
 	CallRecordServiceImpl callRecordService;
 	@Autowired
 	CallSoundServiceImpl callSoundService;
-	private static final Logger log = LoggerFactory.getLogger(ESL.class);
 	@Value("${host}")
 	private String host;
 	@Value("${port}")
@@ -51,24 +55,36 @@ public final class ESL {
 	@Value("${password}")
 	private String password;
 	
-	public static final Client client = new Client();
+//	@Autowired
+//	private InboundClient client;
+	
+//	public static InboundClient client = null;
 
 	// 创建map存数据
-	HashMap<String, String> legMap = new HashMap<String, String>();
+	static HashMap<String, String> legMap = new HashMap<String, String>();
 
+	
+    
+    
 	@PostConstruct
-	public Client inBand() {
+	public InboundClient inBand() {
 
-		try {
-			client.connect(host, port, password, 20);
-		} catch (InboundConnectionFailure e) {
-			log.error("连接FS失败");
-			return null;
-		}
+		InboundClientOption option = new InboundClientOption();
+		option.defaultPassword(password).addServerOption(new ServerOption(host,port));
+		option.addEvents("all");
+	    InboundClient client = InboundClient.newInstance(option);
 
-		// 注册事件处理程序
-		client.addEventListener(new IEslEventListener() {
-			public void eventReceived(EslEvent event) {
+		option.addListener(new IEslEventListener() {
+
+			@Override
+			public void backgroundJobResultReceived(String addr, EslEvent event) {
+//				System.out.println("地址:"+addr);
+//				System.out.println("事件:"+event);
+				
+			}
+
+			@Override
+			public void eventReceived(String addr, EslEvent event) {
 				String event_name = event.getEventName();
 				Map<String, String> map = event.getEventHeaders();
 				String call_uuid = map.get("Unique-ID");
@@ -89,17 +105,21 @@ public final class ESL {
 					callSound.setFilePath(filepath);
 					callSoundService.insert(callSound);
 					break;
+				case EventConstant.RECORD_STOP:
+					break;
 
 				case EventConstant.CHANNEL_CREATE:
 					log.info("【事件CHANNEL_CREATE】" + " | " + "通道ID：" + channelID + "|" + "【呼叫方向】：" + direction);
 					//1、程序控制sip交互响应直接给了200 OK,可以在dialplan的park之前加入early-ring给出180响应
 					//client.sendSyncApiCommand("uuid_answer",channelID);
-					//2、设置通道变量
+					//2、设置通道变量 Call_record_path
 					//client.sendAsyncApiCommand("uuid_setvar",channelID+" Ext_type 2");
-					String cmd1=String.format("uuid_setvar %s %s %s", channelID, "Ext_type","2");
-					client.sendAsyncApiCommand("cmd1", "");
+//					String cmd1=String.format("%s %s","Ext_type","2");
+					String cmd2=String.format("%s %s %s", channelID, "Call_record_path","/home/rtmpServer");
+					client.sendAsyncApiCommand("192.168.0.130:18021","uuid_setvar", cmd2);
+//					client.sendAsyncApiCommand("192.168.0.130",cmd2, "");
+					log.info("给通道设置变量");
 					break;
-
 				case EventConstant.CHANNEL_ANSWER:
 					/*
 					 * == 程序控制 B-leg ==
@@ -130,10 +150,6 @@ public final class ESL {
 					//	System.out.println("【uuid_bridge执行的参数】：" + cmdstr2);
 					//}
 					break;
-
-				case EventConstant.RECORD_STOP:
-					break;
-
 				case EventConstant.CHANNEL_BRIDGE:
 					// long startTime = Long.parseLong(map.get("Caller-Channel-Created-Time"));
 					// long answerTime = Long.parseLong(map.get("Caller-Channel-Answered-Time"));
@@ -166,7 +182,7 @@ public final class ESL {
 					callRecordService.update(callRecord);
 					legMap.remove("a-leg-channelID");
 					legMap.remove("b-leg-channelID");
-					System.out.println("【事件：CHANNEL_HANGUP_COMPLETE】");
+					log.info("【事件：CHANNEL_HANGUP_COMPLETE】");
 					break;
 				case EventConstant.CUSTOM:
 					/* 1、处理会议相关 */
@@ -195,7 +211,6 @@ public final class ESL {
 						log.info("【会议"+map.get("Conference-Name")+"销毁】："+paramsJson);
 					}
 					//log.info("【Custom事件】"+map.get("Event-Subclass"));
-					
 					break;
 					
 				case EventConstant.CALL_DETAIL:
@@ -208,16 +223,54 @@ public final class ESL {
 				default:
 					break;
 				}
+				
 			}
-
-			public void backgroundJobResultReceived(EslEvent event) {
-				String uuid = event.getEventHeaders().get("Job-UUID");
-				log.info("Background job result received+:" + event.getEventName() + "/" + event.getEventHeaders());// +"/"+JoinString(event.getEventHeaders())+"/"+JoinString(event.getEventBodyLines()));
-			}
-
+			
+			
+			
+			
 		});
 
-		client.setEventSubscriptions("plain", "all");
+
+        option.serverConnectionListener(new ServerConnectionListener() {
+            @Override
+            public void onOpened(ServerOption serverOption) {
+                System.out.println("---onOpened--");
+            }
+
+            @Override
+            public void onClosed(ServerOption serverOption) {
+                System.out.println("---onClosed--");
+            }
+        });
+        
+        
+        
+
+        client.start();
+//        client.setEventSubscriptions("192.168.0.130:18021", "plain", "all");
+
+        System.out.println(option.serverAddrOption().first());
+        System.out.println(option.serverAddrOption().last());
+        System.out.println(option.serverAddrOption().random());
+		/*
+		 * try { client.connect(host, port, password, 20); } catch
+		 * (InboundConnectionFailure e) { log.error("连接FS失败"); return null; }
+		 */
+		// 注册事件处理程序
+		/*
+		 * client.addEventListener(new IEslEventListener() {
+		 * 
+		 * public void eventReceived(EslEvent event) {
+		 * 
+		 * }
+		 * 
+		 * public void backgroundJobResultReceived(EslEvent event) { }
+		 * 
+		 * });
+		 */
+
+//		client.setEventSubscriptions("plain", "all");
 
 		/*
 		 * if (client.canSend()) { System.out.println("连接成功，发起呼叫..."); //
@@ -235,13 +288,12 @@ public final class ESL {
 		return client;
 	}
 
-	@RequestMapping("/invoke")
-	public String invoke() {
-		String callResult = client.sendAsyncApiCommand("originate", "user/1002 &playback(/home/audio/demo.wav)");
-		return callResult.toString();
-	}
-
-	@RequestMapping("/call")
+	/*
+	 * @RequestMapping("/invoke") public String invoke() { String callResult =
+	 * client.sendAsyncApiCommand("originate",
+	 * "user/1002 &playback(/home/audio/demo.wav)"); return callResult.toString(); }
+	 */
+//	@RequestMapping("/call")
 	/*
 	 * originate <call_url> <exten>|&<application_name>(<app_args>) [<dialplan>]
 	 * [<context>] [<cid_name>] [<cid_num>] [<timeout_sec>] 命令说明 它的第一个参数是呼叫字符串，
@@ -252,11 +304,11 @@ public final class ESL {
 	 * 
 	 * 
 	 */
-	public String call(@RequestParam(name = "called") String called) {
-		System.out.println("被叫号码:" + called);
+	/*public String call(@RequestParam(name = "called") String called) {
+		log.info("被叫号码:" + called);
 		String callResult = client.sendAsyncApiCommand("originate",
 				"user/" + called + " &playback(/home/audio/demo.wav)");
 		return callResult.toString();
-	}
+	}*/
 
 }

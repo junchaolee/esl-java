@@ -50,7 +50,7 @@ public class ModifyFileLine2 {
 	@Test
 	public void linebyline2() {
 	
-			String xmlpath = "C:\\Users\\tong\\Desktop\\switch.conf.xml";
+			String xmlpath = "C:\\Users\\tong\\Desktop\\tmp2\\switch.conf.xml";
 			SAXReader saxReader = new SAXReader();
 //			Document doc1 = saxReader.read("src/cn/ljc/web_xml/dialplan.xml");
 //			Document doc = saxReader.read(new File(xmlpath));
@@ -67,12 +67,12 @@ public class ModifyFileLine2 {
 								+ "|" + zz.attributeValue("value"));
 
 						if ("rtp-start-port".equals(zz.attributeValue("name"))) {
-							zz.attribute("value").setValue("20070");
+							zz.attribute("value").setValue("20010");
 
 						}
 
 						if ("rtp-end-port".equals(zz.attributeValue("name"))) {
-							zz.attribute("value").setValue("20080");
+							zz.attribute("value").setValue("20050");
 
 						}
 						try {

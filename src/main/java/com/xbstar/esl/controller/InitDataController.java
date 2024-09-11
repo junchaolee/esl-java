@@ -35,15 +35,14 @@ public class InitDataController {
 	
 	
 	@PostConstruct
-	public void init() throws IOException {
+	public void init() {
 		//1、修改switch.conf.xml的rtp端口范围 
 		String rtpStartPort = parasService.findByName("system.rtp.port.start");
 		String rtpEndPort = parasService.findByName("system.rtp.port.end");
-		
 		log.info("【rtp开始端口】："+rtpStartPort);
 		log.info("【rtp结束端口】："+rtpEndPort);
-		
-		String switch_path ="/opt/etc/freeswitch/autoload_configs/switch.conf.xml";
+//		String switch_path ="/opt/etc/freeswitch/autoload_configs/switch.conf.xml";
+		String switch_path ="C:\\Users\\tong\\Desktop\\tmp2\\switch.conf.xml";
 //		String des_path="/tmp/switch.data";
 		
 		Document doc = XMLUtilLjc.getDocument(switch_path); 
@@ -54,8 +53,8 @@ public class InitDataController {
 			if ("settings".equals(element.getName())) {
 				  List<Element> zzElements = element.elements(); 
 				  for (Element zz : zzElements) {
-						log.info("【子2元素及属性name|value值为】:" + zz.getName() + "|" + zz.attributeValue("name")
-								+ "|" + zz.attributeValue("value"));
+						//log.info("【子2元素及属性name|value值为】:" + zz.getName() + "|" + zz.attributeValue("name")
+						//		+ "|" + zz.attributeValue("value"));
 
 						if ("rtp-start-port".equals(zz.attributeValue("name"))) {
 							zz.attribute("value").setValue(rtpStartPort);
